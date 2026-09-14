@@ -107,3 +107,41 @@ li.track button { padding: 6px 14px; font-size: 13px; flex: none; }
   padding: 3px 10px;
 }
 .status.ready { color: var(--accent); border-color: var(--accent); }
+
+#nowplaying {
+  position: fixed;
+  inset: auto 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: var(--panel);
+  border-top: 1px solid var(--line);
+}
+#nowplaying[hidden] { display: none; }
+
+#nowplaying img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex: none; }
+#nowplaying .meta { flex: none; width: 190px; }
+#nowplaying .controls { display: flex; gap: 6px; flex: none; }
+#nowplaying .controls button { padding: 6px 12px; font-size: 13px; }
+#nowplaying .time { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; flex: none; }
+
+#nowplaying .progress {
+  flex: 1;
+  min-width: 140px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+  cursor: pointer;
+}
+#nowplaying .progress .fill {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+@media (max-width: 560px) {
+  #nowplaying .meta { width: 100%; order: -1; }
+}
