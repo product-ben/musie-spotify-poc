@@ -118,7 +118,7 @@ function detailRows({ track, album, artists }) {
     ["Popularity", `${track.popularity} / 100`],
     ["Explicit", track.explicit ? "Yes" : "No"],
     ["Genres", genres.join(", ")],
-    ["Artist followers", followers.toLocaleString()],
+    ["Artist followers", artists.length ? followers.toLocaleString() : null],
     ["Label", album.label],
     ["Copyright", album.copyrights?.map((c) => c.text).join(" · ")],
     ["ISRC", track.external_ids?.isrc],
@@ -202,11 +202,20 @@ function renderControls() {
     reveal.textContent = "Loading…";
     try {
       const track = await getTrack(TRACK_ID);
-      const [album, artists] = await Promise.all([
+      // The album and artist lookups only enrich the card, so a failure in
+      // either should narrow what is shown rather than lose all of it.
+      const [albumResult, artistsResult] = await Promise.allSettled([
         getAlbum(track.album.id),
         getArtists(track.artists.map((a) => a.id)),
       ]);
-      details = { track, album, artists };
+      for (const result of [albumResult, artistsResult]) {
+        if (result.status === "rejected") showError(result.reason.message);
+      }
+      details = {
+        track,
+        album: albumResult.status === "fulfilled" ? albumResult.value : track.album,
+        artists: artistsResult.status === "fulfilled" ? artistsResult.value : [],
+      };
       panel.replaceChildren(detailCard(details));
       panel.hidden = false;
       reveal.textContent = "Hide song details";

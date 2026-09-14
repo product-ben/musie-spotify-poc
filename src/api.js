@@ -21,14 +21,26 @@ async function request(method, path, { params = {}, body } = {}) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  // Read the body first: Spotify explains itself in error.message, and
+  // throwing that away is what made a 403 here impossible to diagnose.
+  const payload = res.status === 204 ? null : await res.json().catch(() => null);
+  const detail = payload?.error?.message;
+  const where = `${method} ${path}`;
+
+  if (res.ok) return payload;
+
   if (res.status === 401) {
     logout();
     throw new Error("Session expired — sign in again.");
   }
-  // The playback endpoints answer 403 when the account isn't Premium and 404
-  // when the target device hasn't registered yet. Both are otherwise opaque.
   if (res.status === 403) {
-    throw new Error("Spotify refused that — full playback requires Premium.");
+    // Only the playback endpoints are about Premium; elsewhere a 403 means
+    // the app itself lacks access to that endpoint.
+    throw new Error(
+      path.startsWith("/me/player")
+        ? `Playback refused${detail ? `: ${detail}` : ""} — this normally means the account isn't Premium.`
+        : `Spotify refused ${where} (403)${detail ? `: ${detail}` : " with no explanation."}`,
+    );
   }
   if (res.status === 404 && path.startsWith("/me/player")) {
     throw new Error("The player isn't ready yet — give it a moment and retry.");
@@ -36,14 +48,7 @@ async function request(method, path, { params = {}, body } = {}) {
   if (res.status === 429) {
     throw new Error(`Rate limited. Retry in ${res.headers.get("Retry-After") || "a few"}s.`);
   }
-  if (!res.ok) {
-    const detail = await res.json().catch(() => ({}));
-    throw new Error(detail.error?.message || `Spotify returned ${res.status}.`);
-  }
-
-  // Playback calls succeed with 204 and an empty body — nothing to parse.
-  if (res.status === 204) return null;
-  return res.json();
+  throw new Error(detail || `${where} failed with ${res.status}.`);
 }
 
 export const getProfile = () => request("GET", "/me");
