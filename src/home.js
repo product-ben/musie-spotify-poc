@@ -90,7 +90,7 @@ const TOOLS = [
     href: "cards.html",
     title: "Printable cards",
     blurb:
-      "One QR card per track, ready to print and cut. Scanning a card opens v0.3.1.",
+      "One QR card per track, ready to print and cut. Scanning a card opens v0.3.2.",
   },
 ];
 
