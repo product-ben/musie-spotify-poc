@@ -10,7 +10,18 @@
     <main>
       <header>
         <h1>musie<span>.</span></h1>
-        <span class="status ready">No sign-in needed</span>
+        <div class="identity">
+          <span class="status ready">No sign-in needed</span>
+          <!-- The embed follows the browser's own Spotify session, not this
+               app's OAuth login, so this goes straight to Spotify. -->
+          <a
+            class="signin"
+            href="https://open.spotify.com"
+            target="_blank"
+            rel="noopener"
+            >Sign in to Spotify ↗</a
+          >
+        </div>
       </header>
       <div id="view"></div>
     </main>
@@ -64,7 +75,11 @@
           el("div", { className: "notice" }, [
             el("p", {
               textContent:
-                "Press play to listen. Pause to reveal what it was. No Spotify account required — signed-in Premium listeners hear the full track, everyone else a 30-second preview.",
+                "Press play to listen. Pause to reveal what it was. No Spotify account required — everyone hears a 30-second preview.",
+            }),
+            el("p", {
+              textContent:
+                "To hear the full track, sign in to Spotify with a Premium account using the link above, then come back to this page and reload. The embed follows whatever Spotify session the browser has; it ignores this app's own login.",
             }),
             el("p", {}, [
               el("a", { href: "cards.html", textContent: "Printable cards →" }),

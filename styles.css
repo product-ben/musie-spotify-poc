@@ -229,3 +229,14 @@ button.big { font-size: 16px; padding: 14px 28px; }
 }
 .stage[data-revealed="true"] .veil { display: none; }
 .stage .veil button:disabled { opacity: 0.6; cursor: progress; }
+
+.signin {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+.signin:hover { border-color: var(--accent); color: var(--accent); }
