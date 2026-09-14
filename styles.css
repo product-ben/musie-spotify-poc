@@ -209,5 +209,23 @@ button.big { font-size: 16px; padding: 14px 28px; }
   text-decoration: none;
 }
 
-.embed { margin-top: 28px; border-radius: 12px; overflow: hidden; }
-.embed iframe { display: block; width: 100%; border: 0; }
+/* The embed, hidden behind a blur until the listener pauses. */
+.stage { position: relative; margin-top: 28px; border-radius: 12px; overflow: hidden; }
+.stage iframe { display: block; width: 100%; border: 0; }
+
+.stage .frame { transition: filter 0.45s ease, transform 0.45s ease; }
+.stage[data-revealed="false"] .frame {
+  /* Scaled up so the blur has pixels to sample at the edges. */
+  filter: blur(22px);
+  transform: scale(1.1);
+}
+
+.stage .veil {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(13, 17, 23, 0.35);
+}
+.stage[data-revealed="true"] .veil { display: none; }
+.stage .veil button:disabled { opacity: 0.6; cursor: progress; }

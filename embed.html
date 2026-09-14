@@ -15,6 +15,7 @@
       <div id="view"></div>
     </main>
 
+    <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
     <script type="module">
       import { CARDS, cardByCode } from "./src/tracks.js";
 
@@ -46,35 +47,52 @@
           ]),
         );
       } else {
-        // Spotify's own embed: it needs no token, no Premium and no allowlisted
-        // account, and it shows the cover art and metadata the developer policy
-        // requires alongside playback.
-        const frame = el("iframe", {
-          src: `https://open.spotify.com/embed/track/${card.id}?utm_source=generator`,
-          width: "100%",
-          height: "352",
-          frameBorder: "0",
-          loading: "lazy",
-          title: "Spotify player",
-        });
-        frame.setAttribute(
-          "allow",
-          "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
-        );
+        // The embed is a cross-origin iframe, so its insides can't be styled or
+        // clicked from here. Instead the whole frame is blurred behind a veil
+        // that carries our own button, and the Spotify IFrame API drives
+        // playback — no dependence on where Spotify puts its controls.
+        const target = el("div", {});
+        const frame = el("div", { className: "frame" }, [target]);
+        const toggle = el("button", { className: "big", textContent: "▶ Play", disabled: true });
+        const veil = el("div", { className: "veil" }, [toggle]);
+        const stage = el("div", { className: "stage" }, [frame, veil]);
+        stage.dataset.revealed = "false";
 
         view.replaceChildren(
           el("h2", { textContent: `Card ${card.code}` }),
-          el("div", { className: "embed" }, [frame]),
+          stage,
           el("div", { className: "notice" }, [
             el("p", {
               textContent:
-                "Anyone can play this — no Spotify account required. Visitors signed into Spotify Premium in this browser hear the full track; everyone else hears a 30-second preview.",
+                "Press play to listen. Pause to reveal what it was. No Spotify account required — signed-in Premium listeners hear the full track, everyone else a 30-second preview.",
             }),
             el("p", {}, [
-              el("a", { href: `index.html?c=${card.code}`, textContent: "Open in the full player →" }),
+              el("a", { href: "cards.html", textContent: "Printable cards →" }),
             ]),
           ]),
         );
+
+        window.onSpotifyIframeApiReady = (IFrameAPI) => {
+          IFrameAPI.createController(
+            target,
+            { uri: `spotify:track:${card.id}`, width: "100%", height: 352 },
+            (controller) => {
+              let hasPlayed = false;
+              toggle.disabled = false;
+
+              toggle.addEventListener("click", () => controller.togglePlay());
+
+              controller.addListener("playback_update", ({ data }) => {
+                if (!data.isPaused) hasPlayed = true;
+                toggle.textContent = data.isPaused ? "▶ Play" : "⏸ Pause";
+
+                // Revealed only once it has played and then been paused, so the
+                // cover art stays hidden for as long as it is playing.
+                if (hasPlayed && data.isPaused) stage.dataset.revealed = "true";
+              });
+            },
+          );
+        };
       }
     </script>
   </body>
