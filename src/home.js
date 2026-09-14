@@ -19,7 +19,7 @@ import {
 const VERSIONS = [
   {
     href: "listen-nudge.html",
-    title: "v0.3.1 embed, scrolldown & nudge",
+    title: "v0.3.2 embed, scrolldown & nudge",
     note: "recommended for testing & beta",
     blurb:
       "As v0.3, with a screen between the controls and the player asking whether you really want to see the track.",
@@ -37,18 +37,18 @@ const VERSIONS = [
   },
   {
     href: "listen.html",
-    title: "v0.3 embed & scrolldown",
+    title: "v0.3.1 embed & scrolldown",
     blurb:
       "Play and pause above the fold, Spotify's widget unaltered on the screen below.",
     pros: [
       "No sign-in and no user cap — anyone can open it",
       "Keeps Spotify's widget unaltered, so it stays within the embed terms",
       "The track is out of the first view on any viewport, guaranteed by lvh",
-      "Works without Premium",
+      "The fewest steps between pressing play and reaching the player",
     ],
     cons: [
       "Listeners without Premium hear 30 seconds, not the whole track",
-      "The track is visible to anyone who scrolls — hidden, not secret",
+      "Nothing stands between one scroll and the track — hidden, not secret",
       "The play button may not be used commercially",
     ],
   },
@@ -89,7 +89,7 @@ const TOOLS = [
     href: "cards.html",
     title: "Printable cards",
     blurb:
-      "One QR card per track, ready to print and cut. Scanning a card opens v0.3.",
+      "One QR card per track, ready to print and cut. Scanning a card opens v0.3.1.",
   },
 ];
 
