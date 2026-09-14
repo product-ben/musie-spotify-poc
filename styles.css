@@ -309,3 +309,23 @@ a.identity { text-decoration: none; color: inherit; }
 .doc th { color: var(--muted); font-weight: 600; }
 .doc td.ok { color: var(--accent); }
 .doc td.bad { color: #e5657f; }
+
+/* Standing conclusion callout. */
+.info {
+  margin-top: 28px;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 10px;
+}
+.info-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+.info-head span { color: var(--accent); font-size: 16px; }
+.info p { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 70ch; }
