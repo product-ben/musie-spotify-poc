@@ -19,28 +19,31 @@ import {
 const VERSIONS = [
   {
     href: "listen.html",
-    title: "Listen",
+    title: "v0.3 embed & scrolldown",
     note: "Recommended",
     blurb:
       "Play and pause above the fold, Spotify's widget unaltered on the screen below. No sign-in required — anyone can open it.",
   },
   {
     href: "embed.html",
-    title: "Blurred embed",
+    title: "v0.2 embed & blur",
     blurb:
       "The same widget behind a blur that lifts when you pause. An experiment: obscuring the widget is against Spotify's embed terms, so this one cannot ship.",
   },
   {
     href: "player.html",
-    title: "Full player",
+    title: "v0.1 api integration",
     blurb:
       "Streams through the Web Playback SDK, so the page owns the interface completely. Needs a signed-in Premium account on the app's allowlist.",
   },
+];
+
+const TOOLS = [
   {
     href: "cards.html",
     title: "Printable cards",
     blurb:
-      "One QR card per track, ready to print and cut. Scanning a card opens it in Listen.",
+      "One QR card per track, ready to print and cut. Scanning a card opens v0.3.",
   },
 ];
 
@@ -53,19 +56,22 @@ const el = (tag, props = {}, children = []) => {
 const headerEl = document.getElementById("header");
 const authEl = document.getElementById("auth");
 const listEl = document.getElementById("versions");
+const toolsEl = document.getElementById("tools");
+
+const card = (version) =>
+  el("a", { className: "version", href: version.href }, [
+    el("div", { className: "version-head" }, [
+      el("span", { className: "version-title", textContent: version.title }),
+      version.note
+        ? el("span", { className: "status ready", textContent: version.note })
+        : null,
+    ]),
+    el("p", { textContent: version.blurb }),
+  ]);
 
 function renderVersions() {
-  listEl.replaceChildren(
-    ...VERSIONS.map((version) =>
-      el("a", { className: "version", href: version.href }, [
-        el("div", { className: "version-head" }, [
-          el("span", { className: "version-title", textContent: version.title }),
-          version.note ? el("span", { className: "status ready", textContent: version.note }) : null,
-        ]),
-        el("p", { textContent: version.blurb }),
-      ]),
-    ),
-  );
+  listEl.replaceChildren(...VERSIONS.map(card));
+  toolsEl.replaceChildren(...TOOLS.map(card));
 }
 
 function showError(message) {

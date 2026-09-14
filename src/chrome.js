@@ -43,8 +43,8 @@ export const signedIn = () => isLoggedIn() && hasCurrentScopes();
 
 export function brandLink() {
   return el("a", { className: "brand", href: "index.html", title: "All versions" }, [
-    document.createTextNode("musie"),
-    el("span", { textContent: "." }),
+    document.createTextNode("musie "),
+    el("span", { textContent: "music streaming poc" }),
   ]);
 }
 

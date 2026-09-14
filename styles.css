@@ -249,7 +249,7 @@ button.big { font-size: 16px; padding: 14px 28px; }
   color: var(--text);
   text-decoration: none;
 }
-.brand span { color: var(--accent); }
+.brand span { color: var(--muted); font-weight: 400; font-size: 0.62em; letter-spacing: 0; }
 .brand:hover { opacity: 0.8; }
 
 a.identity { text-decoration: none; color: inherit; }
@@ -269,3 +269,5 @@ a.identity { text-decoration: none; color: inherit; }
 .version-head { display: flex; align-items: center; gap: 10px; }
 .version-title { font-size: 16px; font-weight: 600; }
 .version p { margin: 6px 0 0; font-size: 14px; }
+
+.rule { border: 0; border-top: 2px solid var(--line); margin: 48px 0 0; }
