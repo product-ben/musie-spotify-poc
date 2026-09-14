@@ -127,20 +127,50 @@
             target,
             { uri: `spotify:track:${card.id}`, width: "100%", height: 352 },
             (controller) => {
+              let finished = false;
+              let lastPosition = 0;
+
               toggle.disabled = false;
-              toggle.addEventListener("click", () => controller.togglePlay());
+              toggle.addEventListener("click", () => {
+                if (finished) {
+                  controller.restart();
+                  finished = false;
+                  toggle.textContent = "⏸ Pause";
+                  return;
+                }
+                controller.togglePlay();
+              });
 
               controller.addListener("playback_update", ({ data }) => {
-                toggle.textContent = data.isPaused ? "▶ Play" : "⏸ Pause";
+                const { position, duration, isPaused } = data;
+
+                if (duration > 0) {
+                  // The last tick can arrive either as position === duration or
+                  // as a snap back to zero, so treat a pause that lands right
+                  // at the end as the end either way.
+                  const atEnd = position >= duration - 500;
+                  const pausedAtEnd =
+                    isPaused && position === 0 && lastPosition >= duration - 1000;
+                  if (atEnd || pausedAtEnd) finished = true;
+                  // Any real progress means it is running again.
+                  if (!isPaused && position < duration - 1000) finished = false;
+                }
+                lastPosition = position;
+
+                toggle.textContent = finished
+                  ? "↻ Restart"
+                  : isPaused
+                    ? "▶ Play"
+                    : "⏸ Pause";
 
                 // The browser's Spotify session is unreadable from this origin,
                 // but the clip length gives it away: 30s means anonymous or
                 // free, longer means a signed-in Premium listener.
-                if (data.duration > 0) {
-                  const preview = data.duration <= 31000;
+                if (duration > 0) {
+                  const preview = duration <= 31000;
                   mode.textContent = preview
                     ? "30-second preview"
-                    : `Full track — ${Math.round(data.duration / 1000)}s`;
+                    : `Full track — ${Math.round(duration / 1000)}s`;
                   mode.classList.toggle("ready", !preview);
                 }
               });
