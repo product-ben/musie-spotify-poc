@@ -58,7 +58,7 @@
   </head>
   <body>
     <header>
-      <h1>musie — printable cards</h1>
+      <h1><a href="index.html" style="color: inherit">musie</a> — printable cards</h1>
       <p>
         One card per track. Print this page, cut along the borders, and scan a
         card with any phone camera to open the player on that track.
@@ -72,12 +72,13 @@
     <script type="module">
       import { CARDS } from "./src/tracks.js";
 
-      // The player lives next to this page, so a card points at this directory
-      // with the card's code attached. Absolute, because a QR has no context.
+      // Cards open the Listen version: it needs no sign-in, and it keeps
+      // Spotify's widget unaltered. Absolute, because a QR has no context.
       const base =
         window.location.origin + window.location.pathname.replace(/[^/]*$/, "");
+      const player = `${base}listen.html`;
 
-      document.getElementById("target").textContent = `Cards point at ${base}`;
+      document.getElementById("target").textContent = `Cards point at ${player}`;
 
       const sheet = document.getElementById("sheet");
       for (const card of CARDS) {
@@ -97,7 +98,7 @@
         // Deliberately encodes the card code, never the track id: anyone can
         // decode a QR with their phone, and the track id would spoil the guess.
         new QRCode(wrapper, {
-          text: `${base}?c=${card.code}`,
+          text: `${player}?c=${card.code}`,
           width: 128,
           height: 128,
           correctLevel: QRCode.CorrectLevel.M,

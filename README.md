@@ -44,12 +44,15 @@ and keep it in `localStorage`.
 
 | File | Purpose |
 | --- | --- |
-| `index.html` | Shell — a header and a single view container |
+| `index.html` | Version index, and the one place you sign in |
+| `player.html` | Full player — streams via the Web Playback SDK |
 | `src/config.js` | Client ID, redirect URI, scopes, endpoints |
 | `src/auth.js` | PKCE login, token exchange, refresh, storage |
 | `src/api.js` | Fetch wrapper for the Web API endpoints used here |
 | `src/player.js` | Web Playback SDK — registers the tab as a device |
-| `src/app.js` | Rendering and event handling |
+| `src/app.js` | Rendering and event handling for the full player |
+| `src/home.js` | The version index and its sign-in |
+| `src/chrome.js` | Brand mark and the shared session badge |
 | `src/tracks.js` | The card catalogue — paste share links here |
 | `cards.html` | Printable QR cards, one per track |
 | `embed.html` | Spotify's own embedded player — no sign-in |
@@ -105,11 +108,15 @@ any phone camera opens the player on that track.
 The QR encodes the card *code*, never the track id. Anyone can decode a QR with
 their phone, and a URL containing `track/0riRZrZ…` would give the answer away.
 
-## Two players
+## Three players
 
-`index.html` is the full player: it signs the visitor in and streams through
-the Web Playback SDK, so the page owns the UI entirely. That needs a Spotify
-Premium account which is on the app's User Management list.
+`index.html` lists them and owns signing in and out. The session lives in
+`localStorage`, so it is shared by every page on the origin — sign in once and
+the brand mark carries you between them with the account intact.
+
+`player.html` streams through the Web Playback SDK, so the page owns the UI
+entirely. That needs a Spotify Premium account which is on the app's User
+Management list.
 
 `embed.html` drops Spotify's own embed onto the page instead. It needs no
 token, no Premium and no allowlisted account, so anyone can open it — visitors

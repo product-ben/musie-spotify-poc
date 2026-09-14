@@ -6,7 +6,6 @@ import { CARDS, cardByCode } from "./tracks.js";
 import {
   getClientId,
   setClientId,
-  login,
   logout,
   handleRedirect,
   isLoggedIn,
@@ -19,6 +18,7 @@ import {
   getArtists,
   playTracks,
 } from "./api.js";
+import { sessionBadge, cacheProfile } from "./chrome.js";
 import {
   initPlayer,
   disconnect,
@@ -93,25 +93,15 @@ function renderSignedOut() {
   sessionEl.replaceChildren();
   barEl.hidden = true;
 
-  const button = el("button", { textContent: "Sign in with Spotify" });
-  button.addEventListener("click", () => login().catch((e) => showError(e.message)));
-
-  const reset = el("button", {
-    className: "ghost",
-    textContent: "Use a different client ID",
-  });
-  reset.addEventListener("click", () => {
-    localStorage.removeItem("musie.client_id");
-    render();
-  });
-
   viewEl.replaceChildren(
     el("div", { className: "notice" }, [
       el("p", {
         textContent:
-          "Sign in to play the track. Playback needs Spotify Premium.",
+          "This version streams through the Web Playback SDK, which needs a signed-in Premium account.",
       }),
-      el("div", { className: "tabs" }, [button, reset]),
+      el("p", {}, [
+        el("a", { href: "index.html", textContent: "Sign in on the index page →" }),
+      ]),
     ]),
   );
 }
@@ -375,20 +365,12 @@ function mountNowPlaying({ onVisibilityChange = () => {} } = {}) {
 async function renderSignedIn() {
   const profile = await getProfile();
 
+  // Cached so the pages that never call the Web API can still name the account.
+  cacheProfile(profile);
+
   const status = el("span", { className: "status", textContent: "Starting player…" });
-  const signOut = el("button", { className: "ghost", textContent: "Sign out" });
-  signOut.addEventListener("click", () => {
-    disconnect();
-    logout();
-    render();
-  });
   sessionEl.replaceChildren(
-    el("div", { className: "identity" }, [
-      status,
-      profile.images?.[0]?.url ? el("img", { src: profile.images[0].url, alt: "" }) : null,
-      el("span", { textContent: profile.display_name || profile.id }),
-      signOut,
-    ]),
+    el("div", { className: "identity" }, [status, sessionBadge()]),
   );
 
   const card = cardByCode(cardCode);

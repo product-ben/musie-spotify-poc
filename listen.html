@@ -49,8 +49,10 @@
   <body>
     <section class="pane hero">
       <div class="pane-top">
-        <h1 style="margin: 0; font-size: 20px">musie<span style="color: var(--accent)">.</span></h1>
-        <span class="status" id="mode">Press play to detect</span>
+        <a class="brand" href="index.html" title="All versions">musie<span>.</span></a>
+        <div class="identity" id="chrome">
+          <span class="status" id="mode">Press play to detect</span>
+        </div>
       </div>
       <div class="pane-mid" id="controls"></div>
       <button class="cue" id="cue" hidden>Scroll to see the track<span>↓</span></button>
@@ -61,6 +63,10 @@
     <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
     <script type="module">
       import { CARDS, cardByCode } from "./src/tracks.js";
+      import { sessionBadge } from "./src/chrome.js";
+
+      // The shared session, carried across pages by localStorage.
+      document.getElementById("chrome").append(sessionBadge());
 
       const el = (tag, props = {}, children = []) => {
         const node = Object.assign(document.createElement(tag), props);

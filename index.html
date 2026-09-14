@@ -3,19 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>musie — Spotify POC</title>
+    <title>musie — versions</title>
     <link rel="stylesheet" href="styles.css" />
+    <script>
+      // Cards printed before the player moved point at this page. Send them on
+      // before anything else renders, unless this is the OAuth redirect coming
+      // back with ?code=.
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        const card = params.get("c");
+        if (card && !params.get("code")) {
+          window.location.replace(`listen.html?c=${encodeURIComponent(card)}`);
+        }
+      })();
+    </script>
   </head>
   <body>
     <main>
-      <header>
-        <h1>musie<span>.</span></h1>
-        <div id="session"></div>
-      </header>
-      <div id="view"></div>
+      <header id="header"></header>
+      <div id="auth"></div>
+      <h2>Versions</h2>
+      <div id="versions"></div>
     </main>
-    <div id="nowplaying" hidden></div>
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script type="module" src="src/app.js"></script>
+    <script type="module" src="src/home.js"></script>
   </body>
 </html>

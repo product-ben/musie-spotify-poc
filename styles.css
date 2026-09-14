@@ -240,3 +240,32 @@ button.big { font-size: 16px; padding: 14px 28px; }
   padding: 6px 14px;
 }
 .signin:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Brand mark, linking back to the version index. */
+.brand {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  text-decoration: none;
+}
+.brand span { color: var(--accent); }
+.brand:hover { opacity: 0.8; }
+
+a.identity { text-decoration: none; color: inherit; }
+
+/* Version index. */
+.version {
+  display: block;
+  margin-top: 12px;
+  padding: 16px 18px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+.version:hover { border-color: var(--accent); }
+.version-head { display: flex; align-items: center; gap: 10px; }
+.version-title { font-size: 16px; font-weight: 600; }
+.version p { margin: 6px 0 0; font-size: 14px; }

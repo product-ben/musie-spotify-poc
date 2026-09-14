@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>musie — full player</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <a class="brand" href="index.html" title="All versions">musie<span>.</span></a>
+        <div id="session"></div>
+      </header>
+      <div id="view"></div>
+    </main>
+    <div id="nowplaying" hidden></div>
+    <script src="https://sdk.scdn.co/spotify-player.js"></script>
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
