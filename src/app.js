@@ -168,8 +168,21 @@ function detailCard(data) {
 function renderControls() {
   const play = el("button", { className: "big", textContent: "▶ Play" });
   const reveal = el("button", { className: "big ghost", textContent: "Reveal song details" });
+  const controls = el("button", { className: "big ghost", textContent: "Show controls" });
   const panel = el("div", { hidden: true });
-  viewEl.replaceChildren(el("div", { className: "actions" }, [play, reveal]), panel);
+  viewEl.replaceChildren(
+    el("div", { className: "actions" }, [play, reveal, controls]),
+    panel,
+  );
+
+  // The bar stays out of the way until asked for, and the button label
+  // follows it however it was closed — this button or its own ✕.
+  const bar = mountNowPlaying({
+    onVisibilityChange: (visible) => {
+      controls.textContent = visible ? "Hide controls" : "Show controls";
+    },
+  });
+  controls.addEventListener("click", () => bar.toggle());
 
   let started = false;
   play.addEventListener("click", async () => {
@@ -232,9 +245,9 @@ function renderControls() {
  * The now-playing bar. player_state_changed only fires when something actually
  * changes, so a local ticker advances the progress bar in between.
  */
-function mountNowPlaying() {
+function mountNowPlaying({ onVisibilityChange = () => {} } = {}) {
   const cover = el("img", { alt: "" });
-  const title = el("div", { className: "title" });
+  const title = el("div", { className: "title", textContent: "Nothing playing yet" });
   const artist = el("div", { className: "artist" });
   const toggle = el("button", { textContent: "▶", title: "Play/pause" });
   const prev = el("button", { className: "ghost", textContent: "⏮", title: "Restart" });
@@ -242,6 +255,12 @@ function mountNowPlaying() {
   const fill = el("div", { className: "fill" });
   const track = el("div", { className: "progress" }, [fill]);
   const time = el("div", { className: "time", textContent: "0:00 / 0:00" });
+  const close = el("button", {
+    className: "close",
+    textContent: "✕",
+    title: "Hide controls",
+    ariaLabel: "Hide controls",
+  });
 
   barEl.replaceChildren(
     cover,
@@ -249,8 +268,15 @@ function mountNowPlaying() {
     el("div", { className: "controls" }, [prev, toggle, next]),
     track,
     time,
+    close,
   );
   barEl.hidden = true;
+
+  const setVisible = (visible) => {
+    barEl.hidden = !visible;
+    onVisibilityChange(visible);
+  };
+  close.addEventListener("click", () => setVisible(false));
 
   let position = 0;
   let duration = 0;
@@ -278,7 +304,7 @@ function mountNowPlaying() {
 
   onPlayerState((state) => {
     if (!state) {
-      barEl.hidden = true;
+      setVisible(false);
       return;
     }
     const current = state.track_window.current_track;
@@ -288,7 +314,6 @@ function mountNowPlaying() {
     ({ position, duration, paused } = state);
     toggle.textContent = paused ? "▶" : "⏸";
     lastTick = Date.now();
-    barEl.hidden = false;
     paint();
   });
 
@@ -299,6 +324,8 @@ function mountNowPlaying() {
     lastTick = now;
     paint();
   }, 500);
+
+  return { toggle: () => setVisible(barEl.hidden) };
 }
 
 async function renderSignedIn() {
@@ -321,7 +348,6 @@ async function renderSignedIn() {
   );
 
   renderControls();
-  mountNowPlaying();
 
   try {
     await initPlayer({ onError: showError });
