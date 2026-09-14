@@ -8,8 +8,10 @@ import {
   logout,
   handleRedirect,
   isLoggedIn,
+  hasCurrentScopes,
 } from "./auth.js";
 import { getProfile, getTopTracks, searchTracks } from "./api.js";
+import { initPlayer, disconnect } from "./player.js";
 
 const sessionEl = document.getElementById("session");
 const viewEl = document.getElementById("view");
@@ -135,6 +137,7 @@ async function renderSignedIn() {
   const signOut = el("button", { className: "ghost", textContent: "Sign out" });
   signOut.addEventListener("click", () => {
     audio.pause();
+    disconnect();
     logout();
     render();
   });
@@ -163,11 +166,27 @@ async function renderSignedIn() {
   });
 
   renderTracks("Your top tracks", await getTopTracks());
+
+  const status = el("span", { className: "status", textContent: "Starting player…" });
+  sessionEl.querySelector(".identity").prepend(status);
+  try {
+    await initPlayer({ onError: (message) => showError(message) });
+    status.textContent = "Player ready";
+    status.classList.add("ready");
+  } catch (err) {
+    status.textContent = "Player unavailable";
+    showError(err.message);
+  }
 }
 
 async function render() {
   try {
     if (!getClientId()) return renderSetup();
+    if (isLoggedIn() && !hasCurrentScopes()) {
+      logout();
+      renderSignedOut();
+      return showError("Playback needs new permissions — please sign in again.");
+    }
     if (!isLoggedIn()) return renderSignedOut();
     await renderSignedIn();
   } catch (err) {

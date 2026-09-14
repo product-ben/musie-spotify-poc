@@ -119,6 +119,9 @@ async function requestTokens(fields) {
     // A refresh response may omit refresh_token; keep the one we already have.
     refresh_token: data.refresh_token || previous?.refresh_token,
     expires_at: Date.now() + data.expires_in * 1000,
+    // Remember what the user actually consented to, so that adding a scope
+    // later can force a fresh login instead of failing with an opaque 403.
+    scope: data.scope || previous?.scope,
   });
   return data;
 }
@@ -137,6 +140,14 @@ function saveTokens(tokens) {
 
 export function isLoggedIn() {
   return Boolean(readTokens()?.refresh_token || readTokens()?.access_token);
+}
+
+/** True when the stored grant already covers every scope in SCOPES. */
+export function hasCurrentScopes() {
+  const granted = readTokens()?.scope;
+  if (!granted) return false;
+  const have = new Set(granted.split(" "));
+  return SCOPES.split(" ").every((scope) => have.has(scope));
 }
 
 export function logout() {

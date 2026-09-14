@@ -11,8 +11,13 @@ export const CLIENT_ID = "6796456706bf44168a52d61b46d7c11e";
 export const REDIRECT_URI = "http://127.0.0.1:5173/";
 
 export const SCOPES = [
+  // Required by the Web Playback SDK itself.
+  "streaming",
   "user-read-private",
   "user-read-email",
+  // Required to start/pause/skip and to read what is currently playing.
+  "user-modify-playback-state",
+  "user-read-playback-state",
   "user-top-read",
   "playlist-read-private",
 ].join(" ");
