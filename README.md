@@ -53,6 +53,7 @@ and keep it in `localStorage`.
 | `src/tracks.js` | The card catalogue — paste share links here |
 | `cards.html` | Printable QR cards, one per track |
 | `embed.html` | Spotify's own embedded player — no sign-in |
+| `listen.html` | Controls above the fold, unaltered embed below |
 | `serve.sh` | Static server on 127.0.0.1:5173 |
 
 Scopes requested: `streaming`, `user-read-private`, `user-read-email`,
@@ -117,7 +118,18 @@ signed into Premium in that browser hear the full track, everyone else hears a
 [developer policy](https://developer.spotify.com/policy) requires alongside
 playback, which the SDK route leaves to you.
 
-Both read the same `?c=` card code and the same catalogue.
+`listen.html` is the same embed arranged differently: play/pause and the
+detection badge fill the first screen, and the widget sits on a second,
+unaltered and reachable by scrolling. Spotify's embed terms forbid obscuring
+the widget, but say nothing about where on the page it lives, and the IFrame
+API exists precisely so it can be driven from your own controls.
+
+The fold is guaranteed with `min-height: calc(100lvh + 24px)` on the first
+pane. `lvh` is the *largest* viewport height, so a collapsing address bar can
+only shrink what is visible — never reveal what is below it. `svh` or `dvh`
+would both let the widget peek in.
+
+All three read the same `?c=` card code and the same catalogue.
 
 ## Deploying
 
