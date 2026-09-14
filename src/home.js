@@ -22,19 +22,48 @@ const VERSIONS = [
     title: "v0.3 embed & scrolldown",
     note: "Recommended",
     blurb:
-      "Play and pause above the fold, Spotify's widget unaltered on the screen below. No sign-in required — anyone can open it.",
+      "Play and pause above the fold, Spotify's widget unaltered on the screen below.",
+    pros: [
+      "No sign-in and no user cap — anyone can open it",
+      "Keeps Spotify's widget unaltered, so it stays within the embed terms",
+      "The track is out of the first view on any viewport, guaranteed by lvh",
+      "Works without Premium",
+    ],
+    cons: [
+      "Listeners without Premium hear 30 seconds, not the whole track",
+      "The track is visible to anyone who scrolls — hidden, not secret",
+      "The play button may not be used commercially",
+    ],
   },
   {
     href: "embed.html",
     title: "v0.2 embed & blur",
-    blurb:
-      "The same widget behind a blur that lifts when you pause. An experiment: obscuring the widget is against Spotify's embed terms, so this one cannot ship.",
+    blurb: "The same widget behind a blur that lifts when you pause.",
+    pros: [
+      "No sign-in and no user cap",
+      "The track is genuinely hidden until the listener pauses",
+    ],
+    cons: [
+      "Breaches the embed terms, which forbid obscuring the widget by any means",
+      "Cannot ship — kept only to show the idea",
+      "Still 30 seconds without Premium",
+    ],
   },
   {
     href: "player.html",
     title: "v0.1 api integration",
     blurb:
-      "Streams through the Web Playback SDK, so the page owns the interface completely. Needs a signed-in Premium account on the app's allowlist.",
+      "Streams through the Web Playback SDK, so the page owns the interface completely.",
+    pros: [
+      "Total control of the interface — none of Spotify's UI appears",
+      "Full-length tracks, with real playback state and a seek bar",
+    ],
+    cons: [
+      "Every listener needs their own Premium subscription",
+      "Capped at the accounts on the app's allowlist while in development mode",
+      "Playing without showing cover art and metadata breaches the developer policy",
+      "Least reliable on mobile Safari",
+    ],
   },
 ];
 
@@ -67,6 +96,16 @@ const card = (version) =>
         : null,
     ]),
     el("p", { textContent: version.blurb }),
+    version.pros || version.cons
+      ? el("ul", { className: "points" }, [
+          ...(version.pros ?? []).map((text) =>
+            el("li", { className: "pro", textContent: text }),
+          ),
+          ...(version.cons ?? []).map((text) =>
+            el("li", { className: "con", textContent: text }),
+          ),
+        ])
+      : null,
   ]);
 
 function renderVersions() {

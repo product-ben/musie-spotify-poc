@@ -271,3 +271,16 @@ a.identity { text-decoration: none; color: inherit; }
 .version p { margin: 6px 0 0; font-size: 14px; }
 
 .rule { border: 0; border-top: 2px solid var(--line); margin: 48px 0 0; }
+
+/* Pros and cons under each version. */
+.points { list-style: none; margin: 12px 0 0; padding: 0; font-size: 13.5px; }
+.points li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  padding: 2px 0;
+  color: var(--muted);
+}
+.points li::before { flex: none; font-weight: 700; }
+.points .pro::before { content: "✓"; color: var(--accent); }
+.points .con::before { content: "✕"; color: #e5657f; }
