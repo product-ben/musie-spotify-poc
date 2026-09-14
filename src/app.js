@@ -195,7 +195,15 @@ function renderCardIndex() {
           ]),
         ),
       ),
-      el("p", {}, [el("a", { href: "cards.html", textContent: "Printable cards →" })]),
+      el("p", {}, [
+        el("a", { href: "cards.html", textContent: "Printable cards →" }),
+      ]),
+      el("p", {}, [
+        el("a", {
+          href: "embed.html",
+          textContent: "Embedded player — no sign-in needed →",
+        }),
+      ]),
     ]),
   );
 }

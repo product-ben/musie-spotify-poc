@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>musie — embedded player</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>musie<span>.</span></h1>
+        <span class="status ready">No sign-in needed</span>
+      </header>
+      <div id="view"></div>
+    </main>
+
+    <script type="module">
+      import { CARDS, cardByCode } from "./src/tracks.js";
+
+      const view = document.getElementById("view");
+      const code = new URLSearchParams(window.location.search).get("c");
+      const card = cardByCode(code);
+
+      const el = (tag, props = {}, children = []) => {
+        const node = Object.assign(document.createElement(tag), props);
+        for (const child of [].concat(children)) if (child) node.append(child);
+        return node;
+      };
+
+      if (!card) {
+        view.replaceChildren(
+          el("div", { className: "notice" }, [
+            el("p", {
+              textContent: code
+                ? `No card ${code} in the catalogue. Pick one below:`
+                : "This link carries no card code. Pick one below:",
+            }),
+            el(
+              "ul",
+              { className: "cardlist" },
+              CARDS.map((c) =>
+                el("li", {}, [el("a", { href: `?c=${c.code}`, textContent: `Card ${c.code}` })]),
+              ),
+            ),
+          ]),
+        );
+      } else {
+        // Spotify's own embed: it needs no token, no Premium and no allowlisted
+        // account, and it shows the cover art and metadata the developer policy
+        // requires alongside playback.
+        const frame = el("iframe", {
+          src: `https://open.spotify.com/embed/track/${card.id}?utm_source=generator`,
+          width: "100%",
+          height: "352",
+          frameBorder: "0",
+          loading: "lazy",
+          title: "Spotify player",
+        });
+        frame.setAttribute(
+          "allow",
+          "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture",
+        );
+
+        view.replaceChildren(
+          el("h2", { textContent: `Card ${card.code}` }),
+          el("div", { className: "embed" }, [frame]),
+          el("div", { className: "notice" }, [
+            el("p", {
+              textContent:
+                "Anyone can play this — no Spotify account required. Visitors signed into Spotify Premium in this browser hear the full track; everyone else hears a 30-second preview.",
+            }),
+            el("p", {}, [
+              el("a", { href: `index.html?c=${card.code}`, textContent: "Open in the full player →" }),
+            ]),
+          ]),
+        );
+      }
+    </script>
+  </body>
+</html>

@@ -208,3 +208,6 @@ button.big { font-size: 16px; padding: 14px 28px; }
   border-radius: 999px;
   text-decoration: none;
 }
+
+.embed { margin-top: 28px; border-radius: 12px; overflow: hidden; }
+.embed iframe { display: block; width: 100%; border: 0; }

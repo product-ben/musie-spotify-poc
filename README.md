@@ -52,6 +52,7 @@ and keep it in `localStorage`.
 | `src/app.js` | Rendering and event handling |
 | `src/tracks.js` | The card catalogue — paste share links here |
 | `cards.html` | Printable QR cards, one per track |
+| `embed.html` | Spotify's own embedded player — no sign-in |
 | `serve.sh` | Static server on 127.0.0.1:5173 |
 
 Scopes requested: `streaming`, `user-read-private`, `user-read-email`,
@@ -102,6 +103,21 @@ any phone camera opens the player on that track.
 
 The QR encodes the card *code*, never the track id. Anyone can decode a QR with
 their phone, and a URL containing `track/0riRZrZ…` would give the answer away.
+
+## Two players
+
+`index.html` is the full player: it signs the visitor in and streams through
+the Web Playback SDK, so the page owns the UI entirely. That needs a Spotify
+Premium account which is on the app's User Management list.
+
+`embed.html` drops Spotify's own embed onto the page instead. It needs no
+token, no Premium and no allowlisted account, so anyone can open it — visitors
+signed into Premium in that browser hear the full track, everyone else hears a
+30-second preview. The embed displays the cover art and metadata that the
+[developer policy](https://developer.spotify.com/policy) requires alongside
+playback, which the SDK route leaves to you.
+
+Both read the same `?c=` card code and the same catalogue.
 
 ## Deploying
 
