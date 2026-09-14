@@ -15,12 +15,14 @@ export const SCOPES = [
   "streaming",
   "user-read-private",
   "user-read-email",
-  // Required to start/pause/skip and to read what is currently playing.
+  // Required to start/pause and to read what is currently playing.
   "user-modify-playback-state",
   "user-read-playback-state",
-  "user-top-read",
-  "playlist-read-private",
 ].join(" ");
+
+// The one track this POC plays. It is the id in a Spotify share link:
+// https://open.spotify.com/intl-de/track/<id>?si=...
+export const TRACK_ID = "0riRZrZ047t64W8esri5a5";
 
 export const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 export const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";

@@ -1,8 +1,12 @@
 # musie — Spotify POC
 
-A proof of concept for browsing Spotify from the browser: sign in with your own
-Spotify account, see your top tracks, search the catalogue, and play full tracks
-in the page itself.
+A proof of concept for playing Spotify from the browser. Sign in and the page
+offers two things: **Play**, which plays one fixed track in the page itself, and
+**Reveal song details**, which opens a card with everything the Web API knows
+about that track.
+
+The track is set by `TRACK_ID` in [`src/config.js`](src/config.js) — it is the
+id from a Spotify share link, the part after `/track/`.
 
 No build step, no backend, no dependencies — plain ES modules served as static
 files. Authentication uses the **Authorization Code flow with PKCE**, which is
@@ -49,8 +53,7 @@ under **User Management** in the dashboard can sign in.
 | `serve.sh` | Static server on 127.0.0.1:5173 |
 
 Scopes requested: `streaming`, `user-read-private`, `user-read-email`,
-`user-modify-playback-state`, `user-read-playback-state`, `user-top-read`,
-`playlist-read-private`.
+`user-modify-playback-state`, `user-read-playback-state`.
 
 ## How playback works
 
@@ -67,6 +70,11 @@ So nothing can play until the SDK's `ready` event has handed over a
 
 ## Known limits
 
+- **The detail card cannot show audio features.** Tempo, key, danceability and
+  the rest come from the Audio Features and Audio Analysis endpoints, which
+  Spotify restricted on 27 November 2024 for apps registered after that date.
+  A new app gets a 403, so the card is built from the track, album and artist
+  objects instead — which is everything still readable.
 - **Playback requires Spotify Premium.** There is no free-tier path to full
   playback; it is enforced server-side, and a free account gets an
   `account_error` from the SDK.

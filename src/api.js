@@ -48,14 +48,13 @@ async function request(method, path, { params = {}, body } = {}) {
 
 export const getProfile = () => request("GET", "/me");
 
-export const getTopTracks = (time_range = "medium_term") =>
-  request("GET", "/me/top/tracks", { params: { limit: 20, time_range } }).then(
-    (d) => d.items,
-  );
+export const getTrack = (id) => request("GET", `/tracks/${id}`);
 
-export const searchTracks = (q) =>
-  request("GET", "/search", { params: { q, type: "track", limit: 20 } }).then(
-    (d) => d.tracks.items,
+export const getAlbum = (id) => request("GET", `/albums/${id}`);
+
+export const getArtists = (ids) =>
+  request("GET", "/artists", { params: { ids: ids.join(",") } }).then(
+    (d) => d.artists,
   );
 
 /** Start playing the given track URIs on our own SDK device. */

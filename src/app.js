@@ -1,7 +1,7 @@
-// View layer: renders the signed-out, setup and signed-in states, plus the
-// now-playing bar driven by the Web Playback SDK.
+// View layer. Signed in, the page shows two things: a play button for one
+// fixed track, and a button that reveals everything Spotify knows about it.
 
-import { REDIRECT_URI } from "./config.js";
+import { REDIRECT_URI, TRACK_ID } from "./config.js";
 import {
   getClientId,
   setClientId,
@@ -11,7 +11,13 @@ import {
   isLoggedIn,
   hasCurrentScopes,
 } from "./auth.js";
-import { getProfile, getTopTracks, searchTracks, playTracks } from "./api.js";
+import {
+  getProfile,
+  getTrack,
+  getAlbum,
+  getArtists,
+  playTracks,
+} from "./api.js";
 import {
   initPlayer,
   disconnect,
@@ -89,64 +95,140 @@ function renderSignedOut() {
     el("div", { className: "notice" }, [
       el("p", {
         textContent:
-          "Sign in to browse your top tracks and play them here. Playback needs Spotify Premium.",
+          "Sign in to play the track. Playback needs Spotify Premium.",
       }),
       el("div", { className: "tabs" }, [button, reset]),
     ]),
   );
 }
 
-function trackItem(track) {
-  const cover = track.album?.images?.at(-1)?.url;
-  const play = el("button", { className: "ghost", textContent: "Play" });
+/** Flatten the track/album/artist objects into labelled rows for the card. */
+function detailRows({ track, album, artists }) {
+  const genres = [...new Set(artists.flatMap((a) => a.genres))];
+  const followers = artists.reduce((sum, a) => sum + a.followers.total, 0);
+
+  return [
+    ["Title", track.name],
+    ["Artists", track.artists.map((a) => a.name).join(", ")],
+    ["Album", `${album.name} (${album.album_type})`],
+    ["Released", album.release_date],
+    ["Track", `${track.track_number} of ${album.total_tracks}`],
+    ["Disc", album.total_tracks > 1 ? String(track.disc_number) : null],
+    ["Duration", formatTime(track.duration_ms)],
+    ["Popularity", `${track.popularity} / 100`],
+    ["Explicit", track.explicit ? "Yes" : "No"],
+    ["Genres", genres.join(", ")],
+    ["Artist followers", followers.toLocaleString()],
+    ["Label", album.label],
+    ["Copyright", album.copyrights?.map((c) => c.text).join(" · ")],
+    ["ISRC", track.external_ids?.isrc],
+    ["Markets", track.available_markets?.length ? `${track.available_markets.length} countries` : null],
+    ["URI", track.uri],
+  ].filter(([, value]) => value);
+}
+
+function detailCard(data) {
+  const { track, album } = data;
+  const cover = album.images?.[0]?.url;
+
+  const list = el("dl", {});
+  for (const [label, value] of detailRows(data)) {
+    list.append(
+      el("dt", { textContent: label }),
+      el("dd", { textContent: value }),
+    );
+  }
+
+  // Everything above is curated; this is genuinely everything the API returned.
+  const raw = el("details", {}, [
+    el("summary", { textContent: "Raw API response" }),
+    el("pre", { textContent: JSON.stringify(data, null, 2) }),
+  ]);
+
+  return el("div", { className: "card" }, [
+    cover ? el("img", { src: cover, alt: `${album.name} cover art` }) : null,
+    el("div", { className: "card-body" }, [
+      el("a", {
+        className: "card-title",
+        href: track.external_urls.spotify,
+        target: "_blank",
+        rel: "noopener",
+        textContent: `${track.name} ↗`,
+      }),
+      list,
+      raw,
+    ]),
+  ]);
+}
+
+/**
+ * The whole signed-in UI: a play button and a reveal button.
+ * Metadata is fetched on the first reveal and reused after that.
+ */
+function renderControls() {
+  const play = el("button", { className: "big", textContent: "▶ Play" });
+  const reveal = el("button", { className: "big ghost", textContent: "Reveal song details" });
+  const panel = el("div", { hidden: true });
+  viewEl.replaceChildren(el("div", { className: "actions" }, [play, reveal]), panel);
+
+  let started = false;
   play.addEventListener("click", async () => {
     const deviceId = getDeviceId();
-    if (!deviceId) return showError("The player is still starting — try again shortly.");
+    if (!deviceId) return showError("The player is still starting — wait for “Player ready”.");
     try {
-      await playTracks(deviceId, [track.uri]);
+      // Once the track is loaded on the device, toggling is instant; starting
+      // it again would restart from the beginning.
+      if (started) return void togglePlay();
+      await playTracks(deviceId, [`spotify:track:${TRACK_ID}`]);
+      started = true;
     } catch (err) {
       showError(err.message);
     }
   });
 
-  return el("li", { className: "track" }, [
-    cover ? el("img", { src: cover, alt: "", loading: "lazy" }) : null,
-    el("div", { className: "meta" }, [
-      el("div", { className: "title", textContent: track.name }),
-      el("div", {
-        className: "artist",
-        textContent: track.artists.map((a) => a.name).join(", "),
-      }),
-    ]),
-    play,
-    el("a", {
-      href: track.external_urls.spotify,
-      target: "_blank",
-      rel: "noopener",
-      textContent: "Open ↗",
-    }),
-  ]);
-}
+  onPlayerState((state) => {
+    if (!state) return;
+    play.textContent = state.paused ? "▶ Play" : "⏸ Pause";
+  });
 
-function renderTracks(heading, tracks) {
-  const list = tracks.length
-    ? el("ol", {}, tracks.map(trackItem))
-    : el("p", { textContent: "Nothing to show." });
-  viewEl
-    .querySelector("#results")
-    ?.replaceChildren(el("h2", { textContent: heading }), list);
+  let details = null;
+  reveal.addEventListener("click", async () => {
+    if (details) {
+      panel.hidden = !panel.hidden;
+      reveal.textContent = panel.hidden ? "Reveal song details" : "Hide song details";
+      return;
+    }
+    reveal.disabled = true;
+    reveal.textContent = "Loading…";
+    try {
+      const track = await getTrack(TRACK_ID);
+      const [album, artists] = await Promise.all([
+        getAlbum(track.album.id),
+        getArtists(track.artists.map((a) => a.id)),
+      ]);
+      details = { track, album, artists };
+      panel.replaceChildren(detailCard(details));
+      panel.hidden = false;
+      reveal.textContent = "Hide song details";
+    } catch (err) {
+      reveal.textContent = "Reveal song details";
+      showError(err.message);
+    } finally {
+      reveal.disabled = false;
+    }
+  });
 }
 
 /**
- * Build the now-playing bar. player_state_changed only fires when something
- * actually changes, so a local ticker advances the progress bar in between.
+ * The now-playing bar. player_state_changed only fires when something actually
+ * changes, so a local ticker advances the progress bar in between.
  */
 function mountNowPlaying() {
   const cover = el("img", { alt: "" });
   const title = el("div", { className: "title" });
   const artist = el("div", { className: "artist" });
   const toggle = el("button", { textContent: "▶", title: "Play/pause" });
-  const prev = el("button", { className: "ghost", textContent: "⏮", title: "Previous" });
+  const prev = el("button", { className: "ghost", textContent: "⏮", title: "Restart" });
   const next = el("button", { className: "ghost", textContent: "⏭", title: "Next" });
   const fill = el("div", { className: "fill" });
   const track = el("div", { className: "progress" }, [fill]);
@@ -229,23 +311,9 @@ async function renderSignedIn() {
     ]),
   );
 
-  const input = el("input", { placeholder: "Search tracks…", required: true });
-  const form = el("form", {}, [input, el("button", { textContent: "Search" })]);
-  const results = el("div", { id: "results" });
-  viewEl.replaceChildren(form, results);
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    try {
-      renderTracks(`Results for “${input.value}”`, await searchTracks(input.value));
-    } catch (err) {
-      showError(err.message);
-    }
-  });
-
-  renderTracks("Your top tracks", await getTopTracks());
-
+  renderControls();
   mountNowPlaying();
+
   try {
     await initPlayer({ onError: showError });
     status.textContent = "Player ready";

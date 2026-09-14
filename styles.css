@@ -66,27 +66,10 @@ form { display: flex; gap: 8px; margin-top: 24px; }
 .identity img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
 
 .tabs { display: flex; gap: 8px; margin-top: 20px; }
-.tabs button[aria-selected="true"] { background: var(--accent); color: #06170d; border-color: transparent; }
-
-ol { list-style: none; margin: 0; padding: 0; }
-
-li.track {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px;
-  border-radius: 10px;
-}
-li.track:hover { background: var(--panel); }
-li.track img { width: 48px; height: 48px; border-radius: 6px; object-fit: cover; flex: none; }
 
 .meta { min-width: 0; flex: 1; }
 .meta .title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .meta .artist { color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-li.track a { color: var(--muted); font-size: 13px; text-decoration: none; flex: none; }
-li.track a:hover { color: var(--text); text-decoration: underline; }
-li.track button { padding: 6px 14px; font-size: 13px; flex: none; }
 
 .notice {
   background: var(--panel);
@@ -144,4 +127,60 @@ li.track button { padding: 6px 14px; font-size: 13px; flex: none; }
 
 @media (max-width: 560px) {
   #nowplaying .meta { width: 100%; order: -1; }
+}
+
+/* The two default actions. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 48px;
+}
+button.big { font-size: 16px; padding: 14px 28px; }
+
+/* Revealed metadata. */
+.card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 28px;
+  padding: 20px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+.card > img { width: 200px; height: 200px; border-radius: 10px; object-fit: cover; }
+.card-body { flex: 1; min-width: 260px; }
+
+.card-title {
+  display: block;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+.card-title:hover { color: var(--accent); }
+
+.card dl {
+  display: grid;
+  grid-template-columns: minmax(110px, auto) 1fr;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 14px;
+}
+.card dt { color: var(--muted); }
+.card dd { margin: 0; overflow-wrap: anywhere; }
+
+.card details { margin-top: 18px; font-size: 13px; }
+.card summary { color: var(--muted); cursor: pointer; }
+.card pre {
+  max-height: 320px;
+  overflow: auto;
+  margin: 10px 0 0;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 12px;
 }
