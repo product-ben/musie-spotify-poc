@@ -20,7 +20,7 @@ const VERSIONS = [
   {
     href: "listen.html",
     title: "v0.3 embed & scrolldown",
-    note: "Recommended",
+    note: "recommended for testing & beta",
     blurb:
       "Play and pause above the fold, Spotify's widget unaltered on the screen below.",
     pros: [
