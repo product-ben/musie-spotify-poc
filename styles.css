@@ -284,3 +284,28 @@ a.identity { text-decoration: none; color: inherit; }
 .points li::before { flex: none; font-weight: 700; }
 .points .pro::before { content: "✓"; color: var(--accent); }
 .points .con::before { content: "✕"; color: #e5657f; }
+
+/* Prose pages. */
+.lede { font-size: 15px; max-width: 60ch; }
+.doc { margin-top: 32px; max-width: 68ch; }
+.doc h3 { font-size: 15px; margin: 32px 0 8px; }
+.doc p { color: var(--muted); }
+.doc strong { color: var(--text); }
+.doc code { background: var(--panel); padding: 1px 5px; border-radius: 4px; font-size: 0.9em; }
+.doc a { color: var(--accent); }
+
+.doc blockquote {
+  margin: 12px 0;
+  padding: 10px 16px;
+  border-left: 3px solid var(--accent);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 14px;
+}
+
+.table-wrap { overflow-x: auto; margin-top: 12px; }
+.doc table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+.doc th, .doc td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.doc th { color: var(--muted); font-weight: 600; }
+.doc td.ok { color: var(--accent); }
+.doc td.bad { color: #e5657f; }

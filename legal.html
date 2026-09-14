@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>musie — legal & commercial investigation</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <header id="header"></header>
+
+      <h2>Legal &amp; commercial investigation</h2>
+      <p class="lede">
+        What Spotify's terms allow, what they forbid, and what each version of
+        this POC costs as a result. Findings from reading the published terms
+        and testing the endpoints directly — not legal advice.
+      </p>
+
+      <section class="doc">
+        <h3>Summary</h3>
+        <p>
+          Two requirements of this product conflict with Spotify's terms:
+          <strong>hiding the track</strong> and <strong>charging for it</strong>.
+          Neither is a technical limitation, and neither can be engineered
+          around. The user cap that first blocked us is the least of the three.
+        </p>
+
+        <h3>1. The widget may not be obscured</h3>
+        <p>The Embeds terms require that you</p>
+        <blockquote>
+          "display the Spotify Widgets in the form made available by Spotify,
+          without alteration"
+        </blockquote>
+        <p>and that you not</p>
+        <blockquote>
+          "obfuscate the Spotify Widgets in any way, whether by banner
+          advertisements or by any other means."
+        </blockquote>
+        <p>
+          A blur under an opaque veil is obfuscation, and "by any other means"
+          closes the gap. This is what <strong>v0.2</strong> does, which is why
+          it cannot ship.
+        </p>
+        <p>
+          Placing the widget further down a page is <em>not</em> obfuscation:
+          it renders at full size, unaltered, and an ordinary scroll reaches it.
+          That is the basis for <strong>v0.3</strong>. Pushing it off-screen
+          instead — negative offsets, zero height — would put you back in
+          breach.
+        </p>
+
+        <h3>2. Playback must show cover art and metadata</h3>
+        <p>The Developer Policy states:</p>
+        <blockquote>
+          "metadata and cover art may only be used in connection with the
+          underlying content, and there shall be no playback of Spotify Content
+          without showing relevant cover art and metadata."
+        </blockquote>
+        <p>
+          Attribution with the Spotify Marks and a link back to the track are
+          required too. This is what rules out <strong>v0.1</strong> as
+          designed: owning the interface means taking on the duty to display
+          what is playing.
+        </p>
+
+        <h3>3. The play button may not be used commercially</h3>
+        <p>Section IV.3.e of the Embeds terms:</p>
+        <blockquote>
+          "the Spotify Play Button may not be used for commercial purposes.
+          This restriction does not prohibit you from embedding the Spotify
+          Play Button on Websites that contain advertising."
+        </blockquote>
+        <p>
+          The carve-out shows where the line sits: the page around the button
+          may earn money, but the button itself may not <em>be</em> the product.
+          The test is whether money changes hands because of the playback.
+        </p>
+        <ul class="points">
+          <li class="pro">Free app, ads on the page — explicitly permitted</li>
+          <li class="pro">Free app, no monetisation — fine</li>
+          <li class="con">Paid or subscription app whose sessions play through the embed</li>
+          <li class="con">
+            Selling printed cards whose QR opens the embed — the cardboard is
+            worthless without the playback it unlocks
+          </li>
+        </ul>
+        <p>
+          The Developer Policy compounds this separately, barring the sale of
+          streaming applications, in-app purchases within streaming features,
+          and advertising sold on the streaming experience.
+        </p>
+        <p>
+          "Commercial purposes" is left undefined. That vagueness is not
+          neutral: Spotify interprets it, and can withdraw access without a
+          court being involved.
+        </p>
+
+        <h3>4. Endpoints restricted since 27 November 2024</h3>
+        <p>
+          Apps registered on or after that date — this one included — receive a
+          403 from Audio Features, Audio Analysis, Recommendations, Related
+          Artists, Featured Playlists, Category Playlists, and the algorithmic
+          and Spotify-owned editorial playlists.
+        </p>
+        <p>
+          Consequences: no tempo, key, energy or valence for a detail card; and
+          no Spotify radio, because the algorithmic radio playlists are exactly
+          what is withheld. A homemade radio from artist top-tracks and genre
+          search remains possible. Apps that held extended access before the
+          change kept it; new grants are not being made.
+        </p>
+
+        <h3>5. The user cap</h3>
+        <p>
+          In development mode only allowlisted accounts can sign in, each
+          needing its own Premium subscription. Extended quota is applied for by
+          form, reviewed against criteria Spotify says may change at any time,
+          with no guaranteed timeline, and covers only the use case described.
+          Describing this use case honestly means describing an app that hides
+          metadata.
+        </p>
+        <p>
+          This cap applies to OAuth against the client ID. The embed, oEmbed and
+          plain track deeplinks touch none of it and are unlimited.
+        </p>
+
+        <h3>6. Technical findings</h3>
+        <ul class="points">
+          <li class="con">
+            <code>open.spotify.com</code> sends
+            <code>frame-ancestors 'self'</code> — the real web player cannot be
+            embedded in an iframe, at all
+          </li>
+          <li class="pro">
+            <code>open.spotify.com/embed/…</code> sends no framing restriction —
+            the official widget frames freely
+          </li>
+          <li class="pro">
+            The oEmbed endpoint is fully public: title, cover art and iframe URL
+            with no token, no quota and no account
+          </li>
+          <li class="pro">
+            The IFrame API is provided so the widget can be driven from your own
+            controls — external play/pause buttons are sanctioned, not a
+            workaround
+          </li>
+        </ul>
+
+        <h3>7. Where each version stands</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Version</th><th>Users</th><th>Hides track</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>v0.3 embed &amp; scrolldown</td>
+                <td>Unlimited</td>
+                <td>Not in first view</td>
+                <td class="ok">Within the terms, if non-commercial</td>
+              </tr>
+              <tr>
+                <td>v0.2 embed &amp; blur</td>
+                <td>Unlimited</td>
+                <td>Yes</td>
+                <td class="bad">Breaches the embed terms</td>
+              </tr>
+              <tr>
+                <td>v0.1 api integration</td>
+                <td>Allowlist only</td>
+                <td>Yes</td>
+                <td class="bad">Breaches the metadata requirement</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>8. Questions to put to Spotify</h3>
+        <ul class="points">
+          <li class="con">
+            Does a paid subscription app whose content plays through the embed
+            count as commercial use of the Play Button?
+          </li>
+          <li class="con">
+            Does selling physical cards that link to an embed page count as
+            commercial use?
+          </li>
+          <li class="con">
+            Is an embed below the fold, unaltered and reachable by scrolling,
+            acceptable where the intent is that the track is not seen first?
+          </li>
+          <li class="con">
+            Is extended quota available at all to an app registered after
+            November 2024 for this use case?
+          </li>
+        </ul>
+
+        <h3>9. The alternative</h3>
+        <p>
+          Licensed, self-hosted audio removes every constraint above: no OAuth,
+          no user cap, no metadata duty, no commercial restriction, no endpoint
+          deprecations, and no party that can withdraw access. For ambient and
+          guided material rather than chart music, it is also the more natural
+          catalogue. The card codes, QR generation and page structure in this
+          repo carry over unchanged.
+        </p>
+
+        <h3>Sources</h3>
+        <ul class="points">
+          <li class="pro">
+            <a href="https://developer.spotify.com/documentation/embeds/terms" target="_blank" rel="noopener">Spotify Embeds — terms and conditions</a>
+          </li>
+          <li class="pro">
+            <a href="https://developer.spotify.com/policy" target="_blank" rel="noopener">Spotify Developer Policy</a>
+          </li>
+          <li class="pro">
+            <a href="https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api" target="_blank" rel="noopener">Changes to the Web API, 27 November 2024</a>
+          </li>
+          <li class="pro">
+            <a href="https://developer.spotify.com/documentation/web-playback-sdk" target="_blank" rel="noopener">Web Playback SDK — requirements</a>
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script type="module">
+      import { brandLink, sessionBadge } from "./src/chrome.js";
+      const header = document.getElementById("header");
+      header.replaceChildren(brandLink(), sessionBadge());
+    </script>
+  </body>
+</html>

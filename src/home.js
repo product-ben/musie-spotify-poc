@@ -76,6 +76,15 @@ const TOOLS = [
   },
 ];
 
+const DOCS = [
+  {
+    href: "legal.html",
+    title: "Legal & commercial investigation",
+    blurb:
+      "What Spotify's terms allow, what they forbid, and what each version costs as a result. Read this before building further.",
+  },
+];
+
 const el = (tag, props = {}, children = []) => {
   const node = Object.assign(document.createElement(tag), props);
   for (const child of [].concat(children)) if (child) node.append(child);
@@ -86,6 +95,7 @@ const headerEl = document.getElementById("header");
 const authEl = document.getElementById("auth");
 const listEl = document.getElementById("versions");
 const toolsEl = document.getElementById("tools");
+const docsEl = document.getElementById("docs");
 
 const card = (version) =>
   el("a", { className: "version", href: version.href }, [
@@ -111,6 +121,7 @@ const card = (version) =>
 function renderVersions() {
   listEl.replaceChildren(...VERSIONS.map(card));
   toolsEl.replaceChildren(...TOOLS.map(card));
+  docsEl.replaceChildren(...DOCS.map(card));
 }
 
 function showError(message) {
