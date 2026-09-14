@@ -24,6 +24,7 @@ const VERSIONS = [
     blurb:
       "As v0.3, with a screen between the controls and the player asking whether you really want to see the track.",
     pros: [
+      "Satisfies both sides at once: Spotify's terms, and the therapeutic intent of keeping the cover and title out of sight so listeners are not primed during the exercise",
       "No sign-in and no user cap — anyone can open it",
       "Keeps Spotify's widget unaltered, so it stays within the embed terms",
       "Seeing the track takes a deliberate second step, framed as part of the exercise",
