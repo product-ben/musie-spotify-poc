@@ -28,10 +28,10 @@ anywhere in the repo.
 ./serve.sh
 ```
 
-Then open <http://127.0.0.1:5173/> and paste the client ID when prompted. It is
-stored in `localStorage`; alternatively hard-code it in
-[`src/config.js`](src/config.js) — the client ID is not a secret under PKCE, so
-committing it is fine for a shared POC.
+Then open <http://127.0.0.1:5173/>. A client ID is already committed in
+[`src/config.js`](src/config.js) — that is safe, because the client ID is not a
+secret under PKCE. Clear it to have the app prompt for a different one instead
+and keep it in `localStorage`.
 
 While the Spotify app is in *development mode*, only accounts you have added
 under **User Management** in the dashboard can sign in.

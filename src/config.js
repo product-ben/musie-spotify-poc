@@ -1,9 +1,9 @@
 // Spotify app settings.
 //
 // The client ID is NOT a secret in the PKCE flow — it is safe to commit.
-// Leave it empty and the app will prompt for it and store it in localStorage,
-// which is handy when several people share the repo with their own Spotify apps.
-export const CLIENT_ID = "";
+// Clear it and the app will prompt for one instead and store it in localStorage,
+// which is handy if someone wants to point this at their own Spotify app.
+export const CLIENT_ID = "6796456706bf44168a52d61b46d7c11e";
 
 // Must match a Redirect URI registered on your app at
 // https://developer.spotify.com/dashboard exactly, including the trailing slash.
