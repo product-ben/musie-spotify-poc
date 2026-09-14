@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>musie — listen (nudge)</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      /* Two full-screen panes: controls first, the embed a deliberate swipe
+         away. The widget itself is untouched — full size, nothing over it,
+         reachable by an ordinary scroll. */
+      html {
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+      }
+      body { padding: 0; }
+
+      .pane {
+        display: flex;
+        flex-direction: column;
+        scroll-snap-align: start;
+        padding: 20px 16px;
+        min-height: 100vh;
+      }
+      /* The extra 24px is slack: rounding or an unusual toolbar must not let
+         the top edge of the widget creep into the first view. */
+      .pane.hero { min-height: calc(100vh + 24px); }
+
+      @supports (height: 100lvh) {
+        .pane { min-height: 100lvh; }
+        /* lvh is the *largest* viewport — the address bar collapsing can only
+           ever shrink what is visible, never reveal what is below. */
+        .pane.hero { min-height: calc(100lvh + 24px); }
+      }
+
+      .pane-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .pane-mid { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; text-align: center; }
+      .pane-mid .code { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+
+      .cue { border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; padding: 12px; cursor: pointer; }
+      .cue:hover { color: var(--text); filter: none; }
+      .cue span { display: block; font-size: 20px; line-height: 1; margin-top: 6px; }
+
+      .gate .pane-mid { gap: 28px; }
+      .gate-text {
+        margin: 0;
+        max-width: 20ch;
+        font-size: clamp(24px, 5.2vw, 40px);
+        line-height: 1.22;
+        font-weight: 600;
+        color: var(--text);
+      }
+      .gate-actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+
+      .reveal-pane { max-width: 560px; margin: 0 auto; width: 100%; justify-content: center; }
+      .reveal-pane h2 { margin-top: 0; }
+      .reveal-pane iframe { display: block; width: 100%; border: 0; border-radius: 12px; }
+    </style>
+  </head>
+  <body>
+    <section class="pane hero">
+      <div class="pane-top">
+        <a class="brand" href="index.html" title="All versions">musie <span>music streaming poc</span></a>
+        <div class="identity" id="chrome">
+          <span class="status" id="mode">Press play to detect</span>
+        </div>
+      </div>
+      <div class="pane-mid" id="controls"></div>
+      <button class="cue" id="cue" hidden>Scroll to see the Spotify player<span>↓</span></button>
+    </section>
+
+    <section class="pane gate" id="gate">
+      <div class="pane-mid">
+        <p class="gate-text">
+          For the exercise, it would be better to not get influenced by the
+          track name and cover
+        </p>
+        <div class="gate-actions">
+          <button class="big" id="back">Continue exercise, back up</button>
+          <button class="big ghost" id="down">Scroll down to player</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="pane reveal-pane" id="reveal"></section>
+
+    <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+    <script type="module">
+      import { CARDS, cardByCode } from "./src/tracks.js";
+      import { sessionBadge } from "./src/chrome.js";
+
+      // The shared session, carried across pages by localStorage.
+      document.getElementById("chrome").append(sessionBadge());
+
+      const el = (tag, props = {}, children = []) => {
+        const node = Object.assign(document.createElement(tag), props);
+        for (const child of [].concat(children)) if (child) node.append(child);
+        return node;
+      };
+
+      const controls = document.getElementById("controls");
+      const revealPane = document.getElementById("reveal");
+      const mode = document.getElementById("mode");
+      const cue = document.getElementById("cue");
+      const hero = document.querySelector(".hero");
+      const gate = document.getElementById("gate");
+
+      const code = new URLSearchParams(window.location.search).get("c");
+      const card = cardByCode(code);
+
+      if (!card) {
+        mode.hidden = true;
+        controls.replaceChildren(
+          el("div", { className: "notice" }, [
+            el("p", {
+              textContent: code
+                ? `No card ${code} in the catalogue. Pick one below:`
+                : "This link carries no card code. Pick one below:",
+            }),
+            el(
+              "ul",
+              { className: "cardlist" },
+              CARDS.map((c) =>
+                el("li", {}, [el("a", { href: `?c=${c.code}`, textContent: `Card ${c.code}` })]),
+              ),
+            ),
+          ]),
+        );
+      } else {
+        const toggle = el("button", { className: "big", textContent: "▶ Play", disabled: true });
+        controls.replaceChildren(
+          el("div", { className: "code", textContent: `Card ${card.code}` }),
+          toggle,
+        );
+
+        const target = el("div", {});
+        revealPane.replaceChildren(
+          el("h2", { textContent: "The track" }),
+          target,
+          el("p", {
+            style: "color: var(--muted); font-size: 13px; margin-top: 16px",
+            textContent: "Played from Spotify.",
+          }),
+        );
+
+        cue.hidden = false;
+        // The cue now lands on the nudge rather than the player, so seeing the
+        // track takes one more deliberate step.
+        cue.addEventListener("click", () => gate.scrollIntoView({ behavior: "smooth" }));
+        document
+          .getElementById("back")
+          .addEventListener("click", () => hero.scrollIntoView({ behavior: "smooth" }));
+        document
+          .getElementById("down")
+          .addEventListener("click", () =>
+            revealPane.scrollIntoView({ behavior: "smooth" }),
+          );
+
+        window.onSpotifyIframeApiReady = (IFrameAPI) => {
+          IFrameAPI.createController(
+            target,
+            { uri: `spotify:track:${card.id}`, width: "100%", height: 352 },
+            (controller) => {
+              let finished = false;
+              let lastPosition = 0;
+
+              toggle.disabled = false;
+              toggle.addEventListener("click", () => {
+                if (finished) {
+                  controller.restart();
+                  finished = false;
+                  toggle.textContent = "⏸ Pause";
+                  return;
+                }
+                controller.togglePlay();
+              });
+
+              controller.addListener("playback_update", ({ data }) => {
+                const { position, duration, isPaused } = data;
+
+                if (duration > 0) {
+                  // The last tick can arrive either as position === duration or
+                  // as a snap back to zero, so treat a pause that lands right
+                  // at the end as the end either way.
+                  const atEnd = position >= duration - 500;
+                  const pausedAtEnd =
+                    isPaused && position === 0 && lastPosition >= duration - 1000;
+                  if (atEnd || pausedAtEnd) finished = true;
+                  // Any real progress means it is running again.
+                  if (!isPaused && position < duration - 1000) finished = false;
+                }
+                lastPosition = position;
+
+                toggle.textContent = finished
+                  ? "↻ Restart"
+                  : isPaused
+                    ? "▶ Play"
+                    : "⏸ Pause";
+
+                // The browser's Spotify session is unreadable from this origin,
+                // but the clip length gives it away: 30s means anonymous or
+                // free, longer means a signed-in Premium listener.
+                if (duration > 0) {
+                  const preview = duration <= 31000;
+                  mode.textContent = preview
+                    ? "30-second preview"
+                    : `Full track — ${Math.round(duration / 1000)}s`;
+                  mode.classList.toggle("ready", !preview);
+                }
+              });
+            },
+          );
+        };
+      }
+    </script>
+  </body>
+</html>

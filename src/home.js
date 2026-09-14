@@ -18,9 +18,26 @@ import {
 
 const VERSIONS = [
   {
+    href: "listen-nudge.html",
+    title: "v0.3.1 embed, scrolldown & nudge",
+    note: "recommended for testing & beta",
+    blurb:
+      "As v0.3, with a screen between the controls and the player asking whether you really want to see the track.",
+    pros: [
+      "No sign-in and no user cap — anyone can open it",
+      "Keeps Spotify's widget unaltered, so it stays within the embed terms",
+      "Seeing the track takes a deliberate second step, framed as part of the exercise",
+      "Works without Premium",
+    ],
+    cons: [
+      "Listeners without Premium hear 30 seconds, not the whole track",
+      "One more screen for anyone who does want the track name",
+      "The play button may not be used commercially",
+    ],
+  },
+  {
     href: "listen.html",
     title: "v0.3 embed & scrolldown",
-    note: "recommended for testing & beta",
     blurb:
       "Play and pause above the fold, Spotify's widget unaltered on the screen below.",
     pros: [
