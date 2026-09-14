@@ -5,10 +5,17 @@
 // which is handy if someone wants to point this at their own Spotify app.
 export const CLIENT_ID = "6796456706bf44168a52d61b46d7c11e";
 
-// Must match a Redirect URI registered on your app at
-// https://developer.spotify.com/dashboard exactly, including the trailing slash.
-// Spotify no longer accepts "localhost" — use the loopback IP.
-export const REDIRECT_URI = "http://127.0.0.1:5173/";
+// Derived from wherever the page is being served, so the same build works on
+// the laptop and on GitHub Pages. Both of the resulting URLs must be listed as
+// Redirect URIs on the app at https://developer.spotify.com/dashboard, exactly,
+// trailing slash included:
+//
+//   http://127.0.0.1:5173/
+//   https://<user>.github.io/musie-spotify-poc/
+//
+// Spotify no longer accepts "localhost" — the local one must be the loopback IP.
+export const REDIRECT_URI =
+  window.location.origin + window.location.pathname.replace(/[^/]*$/, "");
 
 export const SCOPES = [
   // Required by the Web Playback SDK itself.
@@ -19,10 +26,6 @@ export const SCOPES = [
   "user-modify-playback-state",
   "user-read-playback-state",
 ].join(" ");
-
-// The one track this POC plays. It is the id in a Spotify share link:
-// https://open.spotify.com/intl-de/track/<id>?si=...
-export const TRACK_ID = "0riRZrZ047t64W8esri5a5";
 
 export const AUTH_ENDPOINT = "https://accounts.spotify.com/authorize";
 export const TOKEN_ENDPOINT = "https://accounts.spotify.com/api/token";

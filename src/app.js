@@ -1,7 +1,8 @@
 // View layer. Signed in, the page shows two things: a play button for one
 // fixed track, and a button that reveals everything Spotify knows about it.
 
-import { REDIRECT_URI, TRACK_ID } from "./config.js";
+import { REDIRECT_URI } from "./config.js";
+import { CARDS, cardByCode } from "./tracks.js";
 import {
   getClientId,
   setClientId,
@@ -28,6 +29,19 @@ import {
   previousTrack,
   seek,
 } from "./player.js";
+
+// A scanned card arrives as ?c=001. It has to be captured before the OAuth
+// redirect is handled, because coming back from Spotify strips the query
+// string — the card would otherwise be lost across the login.
+const CARD_KEY = "musie.card";
+
+function captureCardCode() {
+  const fromUrl = new URLSearchParams(window.location.search).get("c");
+  if (fromUrl) sessionStorage.setItem(CARD_KEY, fromUrl);
+  return fromUrl ?? sessionStorage.getItem(CARD_KEY);
+}
+
+const cardCode = captureCardCode();
 
 const sessionEl = document.getElementById("session");
 const viewEl = document.getElementById("view");
@@ -165,12 +179,34 @@ function detailCard(data) {
  * The whole signed-in UI: a play button and a reveal button.
  * Metadata is fetched on the first reveal and reused after that.
  */
-function renderControls() {
+function renderCardIndex() {
+  viewEl.replaceChildren(
+    el("div", { className: "notice" }, [
+      el("p", {
+        textContent:
+          "Scan a card to play its track. This link carries no card code — pick one to try:",
+      }),
+      el(
+        "ul",
+        { className: "cardlist" },
+        CARDS.map((card) =>
+          el("li", {}, [
+            el("a", { href: `?c=${card.code}`, textContent: `Card ${card.code}` }),
+          ]),
+        ),
+      ),
+      el("p", {}, [el("a", { href: "cards.html", textContent: "Printable cards →" })]),
+    ]),
+  );
+}
+
+function renderControls(card) {
   const play = el("button", { className: "big", textContent: "▶ Play" });
   const reveal = el("button", { className: "big ghost", textContent: "Reveal song details" });
   const controls = el("button", { className: "big ghost", textContent: "Show controls" });
   const panel = el("div", { hidden: true });
   viewEl.replaceChildren(
+    el("h2", { textContent: `Card ${card.code}` }),
     el("div", { className: "actions" }, [play, reveal, controls]),
     panel,
   );
@@ -192,7 +228,7 @@ function renderControls() {
       // Once the track is loaded on the device, toggling is instant; starting
       // it again would restart from the beginning.
       if (started) return void togglePlay();
-      await playTracks(deviceId, [`spotify:track:${TRACK_ID}`]);
+      await playTracks(deviceId, [`spotify:track:${card.id}`]);
       started = true;
     } catch (err) {
       showError(err.message);
@@ -214,7 +250,7 @@ function renderControls() {
     reveal.disabled = true;
     reveal.textContent = "Loading…";
     try {
-      const track = await getTrack(TRACK_ID);
+      const track = await getTrack(card.id);
       // The album and artist lookups only enrich the card, so a failure in
       // either should narrow what is shown rather than lose all of it.
       const [albumResult, artistsResult] = await Promise.allSettled([
@@ -347,7 +383,9 @@ async function renderSignedIn() {
     ]),
   );
 
-  renderControls();
+  const card = cardByCode(cardCode);
+  if (card) renderControls(card);
+  else renderCardIndex();
 
   try {
     await initPlayer({ onError: showError });

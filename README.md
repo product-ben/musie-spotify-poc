@@ -1,12 +1,12 @@
 # musie — Spotify POC
 
 A proof of concept for playing Spotify from the browser. Sign in and the page
-offers two things: **Play**, which plays one fixed track in the page itself, and
-**Reveal song details**, which opens a card with everything the Web API knows
-about that track.
+offers **Play**, which plays a track in the page itself, and **Reveal song
+details**, which opens a card with everything the Web API knows about it.
 
-The track is set by `TRACK_ID` in [`src/config.js`](src/config.js) — it is the
-id from a Spotify share link, the part after `/track/`.
+Which track depends on the card you scanned. Each printed card carries a QR
+code pointing at `…/?c=001`, and the app looks that code up in
+[`src/tracks.js`](src/tracks.js).
 
 No build step, no backend, no dependencies — plain ES modules served as static
 files. Authentication uses the **Authorization Code flow with PKCE**, which is
@@ -16,13 +16,16 @@ anywhere in the repo.
 ## Setup
 
 1. Create an app at <https://developer.spotify.com/dashboard>.
-2. Under **Redirect URIs**, add exactly:
+2. Under **Redirect URIs**, add both of these exactly:
 
    ```
    http://127.0.0.1:5173/
+   https://<your-github-user>.github.io/musie-spotify-poc/
    ```
 
    Spotify no longer accepts `http://localhost`, and the trailing slash matters.
+   The app derives its redirect URI from wherever it is being served, so the
+   same code works locally and when deployed.
 3. Under **APIs used**, tick *Web API*.
 4. Copy the **Client ID**.
 
@@ -37,9 +40,6 @@ Then open <http://127.0.0.1:5173/>. A client ID is already committed in
 secret under PKCE. Clear it to have the app prompt for a different one instead
 and keep it in `localStorage`.
 
-While the Spotify app is in *development mode*, only accounts you have added
-under **User Management** in the dashboard can sign in.
-
 ## Layout
 
 | File | Purpose |
@@ -50,6 +50,8 @@ under **User Management** in the dashboard can sign in.
 | `src/api.js` | Fetch wrapper for the Web API endpoints used here |
 | `src/player.js` | Web Playback SDK — registers the tab as a device |
 | `src/app.js` | Rendering and event handling |
+| `src/tracks.js` | The card catalogue — paste share links here |
+| `cards.html` | Printable QR cards, one per track |
 | `serve.sh` | Static server on 127.0.0.1:5173 |
 
 Scopes requested: `streaming`, `user-read-private`, `user-read-email`,
@@ -88,3 +90,34 @@ So nothing can play until the SDK's `ready` event has handed over a
   you would ship this — a production app would keep the refresh token on a
   server.
 - `/me/top/tracks` is empty for brand-new accounts with no listening history.
+
+## Cards
+
+`src/tracks.js` holds a list of Spotify share links. Codes are assigned by
+position (`001`, `002`, …), so **append** new links rather than reordering
+them — reordering changes the codes on cards you have already printed.
+
+Open `cards.html`, press Print, and cut along the borders. Scanning a card with
+any phone camera opens the player on that track.
+
+The QR encodes the card *code*, never the track id. Anyone can decode a QR with
+their phone, and a URL containing `track/0riRZrZ…` would give the answer away.
+
+## Deploying
+
+The app is static, so GitHub Pages serves it as-is with no build step. Pages is
+enabled from the `main` branch at the repository root; every push deploys.
+
+Two things must line up or login fails:
+
+- the Pages URL must be registered as a Redirect URI on the Spotify app;
+- the site must be served over HTTPS, which Pages does automatically. Protected
+  audio will not play over plain HTTP anywhere except loopback.
+
+## Who can sign in
+
+While the Spotify app is in **development mode**, only accounts listed under
+**User Management** in the dashboard can sign in — up to 25 — and each needs
+its own Spotify Premium subscription to hear anything. Every guest scanning a
+card on their own phone therefore needs both. Lifting that means applying to
+Spotify for an extension.

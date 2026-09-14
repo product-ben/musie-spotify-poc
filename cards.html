@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>musie — printable cards</title>
+    <style>
+      /* Deliberately light and plain: this page exists to come out of a printer. */
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #fff;
+        color: #111;
+        font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      }
+      header { max-width: 720px; margin: 0 auto 24px; }
+      h1 { font-size: 20px; margin: 0 0 8px; }
+      p { color: #555; margin: 0 0 12px; }
+      button {
+        font: inherit;
+        font-weight: 600;
+        padding: 8px 18px;
+        border: 1px solid #111;
+        border-radius: 999px;
+        background: #111;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .sheet {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+        max-width: 720px;
+        margin: 0 auto;
+      }
+      .card {
+        break-inside: avoid;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 14px;
+        border: 1px dashed #999;
+        border-radius: 10px;
+        text-align: center;
+      }
+      .card img, .card canvas { width: 128px; height: 128px; }
+      .code { font-size: 18px; font-weight: 700; letter-spacing: 0.08em; }
+      .brand { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 0.14em; }
+
+      @media print {
+        header { display: none; }
+        body { padding: 0; }
+        .card { border-style: solid; border-color: #ccc; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>musie — printable cards</h1>
+      <p>
+        One card per track. Print this page, cut along the borders, and scan a
+        card with any phone camera to open the player on that track.
+      </p>
+      <p id="target"></p>
+      <button onclick="window.print()">Print</button>
+    </header>
+    <div class="sheet" id="sheet"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module">
+      import { CARDS } from "./src/tracks.js";
+
+      // The player lives next to this page, so a card points at this directory
+      // with the card's code attached. Absolute, because a QR has no context.
+      const base =
+        window.location.origin + window.location.pathname.replace(/[^/]*$/, "");
+
+      document.getElementById("target").textContent = `Cards point at ${base}`;
+
+      const sheet = document.getElementById("sheet");
+      for (const card of CARDS) {
+        const holder = document.createElement("div");
+        const wrapper = document.createElement("div");
+        const code = document.createElement("div");
+        const brand = document.createElement("div");
+
+        holder.className = "card";
+        code.className = "code";
+        code.textContent = card.code;
+        brand.className = "brand";
+        brand.textContent = "musie";
+        holder.append(wrapper, code, brand);
+        sheet.append(holder);
+
+        // Deliberately encodes the card code, never the track id: anyone can
+        // decode a QR with their phone, and the track id would spoil the guess.
+        new QRCode(wrapper, {
+          text: `${base}?c=${card.code}`,
+          width: 128,
+          height: 128,
+          correctLevel: QRCode.CorrectLevel.M,
+        });
+      }
+    </script>
+  </body>
+</html>
