@@ -147,6 +147,23 @@
                 el("li", {}, [el("a", { href: `?c=${c.code}`, textContent: `Card ${c.code}` })]),
               ),
             ),
+            // Straight to Spotify, not through this app's OAuth: the embed
+            // follows the browser's own Spotify session, and a Premium one is
+            // what gets you the full track instead of a 30-second preview.
+            el("p", {}, [
+              el("a", {
+                className: "signin",
+                href: "https://open.spotify.com",
+                target: "_blank",
+                rel: "noopener",
+                textContent: "Sign in to Spotify ↗",
+              }),
+            ]),
+            el("p", {
+              style: "font-size: 13px; margin-top: 10px",
+              textContent:
+                "Sign in there with Premium, then come back and reload this page to hear full tracks rather than 30-second previews.",
+            }),
           ]),
         );
       } else {
