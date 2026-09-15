@@ -6,6 +6,7 @@ import { CARDS, cardByCode } from "./tracks.js";
 import {
   getClientId,
   setClientId,
+  login,
   logout,
   handleRedirect,
   isLoggedIn,
@@ -18,7 +19,7 @@ import {
   getArtists,
   playTracks,
 } from "./api.js";
-import { sessionBadge, cacheProfile } from "./chrome.js";
+import { sessionBadge, cacheProfile, clearProfile } from "./chrome.js";
 import {
   initPlayer,
   disconnect,
@@ -93,15 +94,16 @@ function renderSignedOut() {
   sessionEl.replaceChildren();
   barEl.hidden = true;
 
+  const button = el("button", { textContent: "Sign in with Spotify" });
+  button.addEventListener("click", () => login().catch((e) => showError(e.message)));
+
   viewEl.replaceChildren(
     el("div", { className: "notice" }, [
       el("p", {
         textContent:
-          "This version streams through the Web Playback SDK, which needs a signed-in Premium account.",
+          "This version streams through the Web Playback SDK, which needs a Spotify Premium account on the app's allowlist. The embed versions need none of this.",
       }),
-      el("p", {}, [
-        el("a", { href: "index.html", textContent: "Sign in on the index page →" }),
-      ]),
+      el("div", { className: "tabs" }, [button]),
     ]),
   );
 }
@@ -369,8 +371,15 @@ async function renderSignedIn() {
   cacheProfile(profile);
 
   const status = el("span", { className: "status", textContent: "Starting player…" });
+  const signOut = el("button", { className: "ghost", textContent: "Sign out" });
+  signOut.addEventListener("click", () => {
+    disconnect();
+    clearProfile();
+    logout();
+    render();
+  });
   sessionEl.replaceChildren(
-    el("div", { className: "identity" }, [status, sessionBadge()]),
+    el("div", { className: "identity" }, [status, sessionBadge(), signOut]),
   );
 
   const card = cardByCode(cardCode);

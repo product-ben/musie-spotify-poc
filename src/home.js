@@ -1,20 +1,7 @@
 // The index page: what versions exist, and the one place you sign in or out.
 
-import {
-  handleRedirect,
-  login,
-  logout,
-  getClientId,
-  setClientId,
-} from "./auth.js";
-import { getProfile } from "./api.js";
-import {
-  brandLink,
-  cacheProfile,
-  clearProfile,
-  readProfile,
-  signedIn,
-} from "./chrome.js";
+import { handleRedirect } from "./auth.js";
+import { brandLink } from "./chrome.js";
 
 const VERSIONS = [
   {
@@ -143,79 +130,21 @@ function renderVersions() {
 }
 
 function showError(message) {
-  authEl.prepend(el("div", { className: "notice error", textContent: message }));
-}
-
-async function renderAuth() {
-  headerEl.replaceChildren(brandLink());
-
-  if (!getClientId()) {
-    const input = el("input", { placeholder: "Spotify client ID", required: true });
-    const form = el("form", {}, [input, el("button", { textContent: "Save" })]);
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      setClientId(input.value);
-      renderAuth();
-    });
-    return authEl.replaceChildren(
-      el("div", { className: "notice" }, [
-        el("p", { textContent: "No Spotify client ID configured yet." }),
-        form,
-      ]),
-    );
-  }
-
-  if (!signedIn()) {
-    const button = el("button", { textContent: "Sign in with Spotify" });
-    button.addEventListener("click", () => login().catch((e) => showError(e.message)));
-    return authEl.replaceChildren(
-      el("div", { className: "notice" }, [
-        el("p", {
-          textContent:
-            "Signing in here carries across every page — the session is shared. Only the Full player needs it; the embed pages work signed out.",
-        }),
-        el("div", { className: "tabs" }, [button]),
-      ]),
-    );
-  }
-
-  // Refresh the cached profile so the other pages can name the account
-  // without an API call of their own.
-  let profile = readProfile();
-  try {
-    const fresh = await getProfile();
-    cacheProfile(fresh);
-    profile = readProfile();
-  } catch (err) {
-    showError(err.message);
-  }
-
-  const signOut = el("button", { className: "ghost", textContent: "Sign out" });
-  signOut.addEventListener("click", () => {
-    clearProfile();
-    logout();
-    renderAuth();
-  });
-
-  authEl.replaceChildren(
-    el("div", { className: "notice" }, [
-      el("div", { className: "identity" }, [
-        profile?.image ? el("img", { src: profile.image, alt: "" }) : null,
-        el("span", { textContent: `Signed in as ${profile?.name ?? "you"}` }),
-        signOut,
-      ]),
-      el("p", { textContent: "This session is shared with every page below." }),
-    ]),
-  );
+  authEl.replaceChildren(el("div", { className: "notice error", textContent: message }));
 }
 
 (async () => {
+  headerEl.replaceChildren(brandLink());
   renderVersions();
+
+  // Spotify sends the OAuth redirect back to the directory root, which is this
+  // page, wherever the sign-in was started. Hand the visitor back to v0.1,
+  // which is the only version that needs an account at all.
   try {
-    await handleRedirect();
+    if (await handleRedirect()) {
+      window.location.replace("player.html");
+    }
   } catch (err) {
-    await renderAuth();
-    return showError(err.message);
+    showError(err.message);
   }
-  await renderAuth();
 })();

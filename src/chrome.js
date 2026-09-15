@@ -48,23 +48,49 @@ export function brandLink() {
   ]);
 }
 
-/** Read-only session indicator; signing in and out lives on the index page. */
+/** Read-only session indicator; signing in and out lives on v0.1. */
 export function sessionBadge() {
   if (!signedIn()) {
     return el("a", {
       className: "signin",
-      href: "index.html",
+      href: "player.html",
       textContent: "Not signed in",
     });
   }
   const profile = readProfile();
-  return el("a", { className: "identity", href: "index.html" }, [
+  return el("a", { className: "identity", href: "player.html" }, [
     profile?.image ? el("img", { src: profile.image, alt: "" }) : null,
     el("span", {
       className: "status ready",
       textContent: profile?.name ? `Signed in · ${profile.name}` : "Signed in",
     }),
   ]);
+}
+
+/**
+ * Header badge saying whether this browser holds a Spotify Premium session.
+ *
+ * It cannot be known in advance: the Spotify session belongs to another origin
+ * and is unreadable from here. The embed itself decides what to serve, and the
+ * length of what comes back is the only available signal — 30 seconds means no
+ * Premium session, anything longer means there is one. So the badge resolves
+ * when the embed reports a duration, not before.
+ */
+export function premiumBadge(node) {
+  node.textContent = "Premium session unknown";
+  node.title = "Resolves once the player reports what it is allowed to play.";
+
+  return (durationMs) => {
+    if (!durationMs) return;
+    const preview = durationMs <= 31000;
+    node.textContent = preview
+      ? "Not signed in to Premium"
+      : "Signed in to Premium";
+    node.title = preview
+      ? "The embed served a 30-second preview, so this browser has no Spotify Premium session."
+      : `The embed served the full ${Math.round(durationMs / 1000)}s track, so this browser has a Spotify Premium session.`;
+    node.classList.toggle("ready", !preview);
+  };
 }
 
 /** Fill a <header> with the brand mark, the session badge, and anything extra. */

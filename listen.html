@@ -51,7 +51,7 @@
       <div class="pane-top">
         <a class="brand" href="index.html" title="All versions">musie <span>music streaming poc</span></a>
         <div class="identity" id="chrome">
-          <span class="status" id="mode">Press play to detect</span>
+          <span class="status" id="mode">Premium session unknown</span>
         </div>
       </div>
       <div class="pane-mid" id="controls"></div>
@@ -63,10 +63,8 @@
     <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
     <script type="module">
       import { CARDS, cardByCode } from "./src/tracks.js";
-      import { sessionBadge } from "./src/chrome.js";
+      import { premiumBadge } from "./src/chrome.js";
 
-      // The shared session, carried across pages by localStorage.
-      document.getElementById("chrome").append(sessionBadge());
 
       const el = (tag, props = {}, children = []) => {
         const node = Object.assign(document.createElement(tag), props);
@@ -77,6 +75,9 @@
       const controls = document.getElementById("controls");
       const revealPane = document.getElementById("reveal");
       const mode = document.getElementById("mode");
+      // Reports the browser's own Spotify session, which is what decides
+      // whether a full track or a 30-second preview comes back.
+      const setPremium = premiumBadge(mode);
       const cue = document.getElementById("cue");
 
       const code = new URLSearchParams(window.location.search).get("c");
@@ -163,16 +164,7 @@
                     ? "▶ Play"
                     : "⏸ Pause";
 
-                // The browser's Spotify session is unreadable from this origin,
-                // but the clip length gives it away: 30s means anonymous or
-                // free, longer means a signed-in Premium listener.
-                if (duration > 0) {
-                  const preview = duration <= 31000;
-                  mode.textContent = preview
-                    ? "30-second preview"
-                    : `Full track — ${Math.round(duration / 1000)}s`;
-                  mode.classList.toggle("ready", !preview);
-                }
+                setPremium(duration);
               });
             },
           );
