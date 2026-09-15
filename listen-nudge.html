@@ -40,6 +40,7 @@
       .cue { border: 0; background: none; color: var(--muted); font: inherit; font-size: 14px; padding: 12px; cursor: pointer; }
       .cue:hover { color: var(--text); filter: none; }
       .cue span { display: block; font-size: 20px; line-height: 1; margin-top: 6px; }
+      .cue.up span { margin: 0 0 6px; }
 
       .gate .pane-mid { gap: 28px; }
       .gate-text {
@@ -134,6 +135,12 @@
         );
 
         const target = el("div", {});
+        const up = el("button", { className: "cue up" }, [
+          el("span", { textContent: "↑" }),
+          document.createTextNode("Scroll up to exercise"),
+        ]);
+        up.addEventListener("click", () => hero.scrollIntoView({ behavior: "smooth" }));
+
         revealPane.replaceChildren(
           el("h2", { textContent: "The track" }),
           target,
@@ -141,6 +148,7 @@
             style: "color: var(--muted); font-size: 13px; margin-top: 16px",
             textContent: "Played from Spotify.",
           }),
+          up,
         );
 
         cue.hidden = false;
