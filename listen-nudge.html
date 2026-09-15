@@ -147,13 +147,14 @@
                 el("li", {}, [el("a", { href: `?c=${c.code}`, textContent: `Card ${c.code}` })]),
               ),
             ),
-            // Straight to Spotify, not through this app's OAuth: the embed
-            // follows the browser's own Spotify session, and a Premium one is
-            // what gets you the full track instead of a 30-second preview.
+            // accounts.spotify.com/login, not open.spotify.com: the latter
+            // claims "/" as a universal link, so phones hand it straight to
+            // the installed app and the browser never gets a session. The
+            // login path is not claimed, so it stays in the browser.
             el("p", {}, [
               el("a", {
                 className: "signin",
-                href: "https://open.spotify.com",
+                href: "https://accounts.spotify.com/login",
                 target: "_blank",
                 rel: "noopener",
                 textContent: "Sign in to Spotify ↗",
