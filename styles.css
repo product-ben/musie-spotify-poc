@@ -329,3 +329,5 @@ a.identity { text-decoration: none; color: inherit; }
 }
 .info-head span { color: var(--accent); font-size: 16px; }
 .info p { margin: 8px 0 0; color: var(--muted); font-size: 14px; max-width: 70ch; }
+
+.reveal-pane audio { width: 100%; margin-top: 8px; }

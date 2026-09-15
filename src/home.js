@@ -5,9 +5,26 @@ import { brandLink } from "./chrome.js";
 
 const VERSIONS = [
   {
+    href: "listen-selfhosted.html",
+    title: "v0.4 self-hosted player",
+    note: "recommended for testing & beta",
+    blurb:
+      "The same three screens as v0.3.2, but the audio is served from this site instead of Spotify. Feed.fm's API looks promising and may be integrated later if user testing shows that emotionally familiar music — tracks people already know — is what the exercise needs.",
+    pros: [
+      "Full-length playback everywhere, mobile browsers included — the one thing every streaming embed fails at",
+      "No accounts, no user cap, no allowlist, no third party who can withdraw access",
+      "No metadata duty and no commercial restriction: the track can be hidden, and the product can be sold",
+      "Nothing to satisfy but your own licence",
+    ],
+    cons: [
+      "You have to license the audio yourself",
+      "Currently a placeholder drone, not real music",
+      "No catalogue of songs people already recognise, which may turn out to matter",
+    ],
+  },
+  {
     href: "listen-nudge.html",
     title: "v0.3.2 embed, scrolldown & nudge",
-    note: "recommended for testing & beta",
     blurb:
       "As v0.3, with a screen between the controls and the player asking whether you really want to see the track.",
     pros: [
@@ -18,7 +35,8 @@ const VERSIONS = [
       "Works without Premium",
     ],
     cons: [
-      "Listeners without Premium hear 30 seconds, not the whole track",
+      "Only serves 30 seconds on mobile browsers — where the cards are actually scanned",
+      "Listeners without Premium hear 30 seconds on desktop too",
       "One more screen for anyone who does want the track name",
       "The play button may not be used commercially",
     ],

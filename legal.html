@@ -137,7 +137,47 @@
           plain track deeplinks touch none of it and are unlimited.
         </p>
 
-        <h3>6. Technical findings</h3>
+        <h3>6. Desktop works, mobile does not</h3>
+        <p>
+          Tested 15 September 2026, signed in to Spotify Premium in the same
+          browser: the v0.3.x embed plays the <strong>full track on desktop</strong>
+          (Chrome and Dia), and serves a <strong>30-second preview on mobile</strong>
+          (iOS Safari and Chrome on iOS).
+        </p>
+        <p>
+          Chrome on iOS is Safari — Apple requires every iOS browser to use
+          WebKit — so that was one engine tested twice, not two. Android is
+          still untested.
+        </p>
+        <p>Two candidate causes, not yet distinguished:</p>
+        <ul class="points">
+          <li class="con">
+            <strong>Third-party storage partitioning.</strong> WebKit blocks
+            third-party cookies by default, so the embedded
+            <code>open.spotify.com</code> iframe cannot read the Spotify
+            session even though the browser holds one. Nothing on our side can
+            fix this; only Spotify could, via the Storage Access API.
+          </li>
+          <li class="con">
+            <strong>Spotify does not allow full web playback on mobile at
+            all,</strong> pushing listeners into the app instead. Then it is a
+            product decision, not a technical one.
+          </li>
+        </ul>
+        <p>
+          Opening the embed as a top-level page on a phone would separate the
+          two: if it plays in full there but not when embedded, it is
+          partitioning.
+        </p>
+        <p>
+          Either way the consequence is the same, and it is decisive. This
+          product is <strong>a printed card scanned with a phone</strong>.
+          Playback that only works on desktop fails exactly where the product
+          lives. That is what moved v0.4 — self-hosted audio — to the
+          recommendation.
+        </p>
+
+        <h3>7. Technical findings</h3>
         <ul class="points">
           <li class="con">
             <code>open.spotify.com</code> sends
@@ -159,7 +199,7 @@
           </li>
         </ul>
 
-        <h3>7. Where each version stands</h3>
+        <h3>8. Where each version stands</h3>
         <div class="table-wrap">
           <table>
             <thead>
@@ -167,10 +207,16 @@
             </thead>
             <tbody>
               <tr>
+                <td>v0.4 self-hosted player</td>
+                <td>Unlimited</td>
+                <td>Behind a deliberate second step</td>
+                <td class="ok">No Spotify terms apply at all</td>
+              </tr>
+              <tr>
                 <td>v0.3.2 embed, scrolldown &amp; nudge</td>
                 <td>Unlimited</td>
                 <td>Behind a deliberate second step</td>
-                <td class="ok">Within the terms, if non-commercial</td>
+                <td class="bad">30 seconds only on mobile</td>
               </tr>
               <tr>
                 <td>v0.3.1 embed &amp; scrolldown</td>
@@ -194,7 +240,7 @@
           </table>
         </div>
 
-        <h3>8. Questions to put to Spotify</h3>
+        <h3>9. Questions to put to Spotify</h3>
         <ul class="points">
           <li class="con">
             Does a paid subscription app whose content plays through the embed
@@ -214,7 +260,7 @@
           </li>
         </ul>
 
-        <h3>9. The alternative</h3>
+        <h3>10. The alternative</h3>
         <p>
           Licensed, self-hosted audio removes every constraint above: no OAuth,
           no user cap, no metadata duty, no commercial restriction, no endpoint
