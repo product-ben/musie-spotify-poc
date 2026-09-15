@@ -5,9 +5,25 @@ import { brandLink } from "./chrome.js";
 
 const VERSIONS = [
   {
+    href: "listen-designsystem.html",
+    title: "v0.4.1 self-hosted, design system",
+    note: "recommended for testing & beta",
+    blurb:
+      "v0.4 rebuilt on the Musy design system — its tokens, its components, its themes. Nothing about the flow changed; only what it is made of.",
+    pros: [
+      "Built from released components rather than one-off CSS: Track Button, Music Player, CTA Button, Badge, Message, Logo",
+      "Every colour, space, radius and motion value resolves to a Layer 1 token — the page adds no design values of its own",
+      "Light and dark come from the system's own manual theme switch, and reduced-motion and high-contrast are honoured at token level",
+      "A real scrubber with arrow keys, Home/End and a 44px grab area, which the hand-rolled versions never had",
+    ],
+    cons: [
+      "Still the placeholder drone, not licensed music",
+      "The stacked arrow-above-label button does not exist in the system yet, so the scroll cues use the inline-icon ghost button",
+    ],
+  },
+  {
     href: "listen-selfhosted.html",
     title: "v0.4 self-hosted player",
-    note: "recommended for testing & beta",
     blurb:
       "The same three screens as v0.3.2, but the audio is served from this site instead of Spotify. Feed.fm's API looks promising and may be integrated later if user testing shows that emotionally familiar music — tracks people already know — is what the exercise needs.",
     pros: [

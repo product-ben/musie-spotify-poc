@@ -1,0 +1,649 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MUSY — DESIGN SYSTEM FOUNDATIONS (root layer)
+   Foundations only. No component styles live in this file.
+
+   ARCHITECTURE
+     Layer 1  RAW PRIMITIVES    --<scale>-<step>        never consumed directly
+     Layer 2  SEMANTIC ALIASES  --<category>-<role>-<variant>-<state>  use THESE
+     Layer 3  DIMENSION         spacing · target · radius · border · elevation ·
+                                focus · motion · z · icon · type · layout
+
+   NAMING       <category>-<role>-<variant>-<state>, lowercase, hyphen only.
+   FIGMA MIRROR CSS --interactive-primary-hover == Figma interactive/primary-hover
+                (last hyphen group before a known state name becomes the state)
+   THEMING      Manual toggle only — the system preference is NOT consulted.
+                [data-theme] sets color-scheme; every themed token resolves
+                through light-dark(). Tokens are re-declared on [data-theme]
+                so a NESTED override recomputes instead of inheriting.
+   BASELINE     evergreen + iOS Safari 18+ (light-dark(), no fallbacks)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root                { color-scheme: light; }
+[data-theme="light"] { color-scheme: light; }
+[data-theme="dark"]  { color-scheme: dark;  }
+
+/* ═══ LAYER 1 — RAW PRIMITIVES ═════════════════════════════════════════════
+   Radix-structured 12-step scales; one declaration per step carries both
+   themes. Steps 1–8 are curve-placed. Steps 9/10 are anchored on the Figma
+   brand values. Steps 11, 12, `edge` and `press` are CONTRAST-SOLVED against
+   every surface a foreground can legally land on — including other scales'
+   tinted fills — not eyeballed.
+   Do not consume these directly. Layer 2 is the API.                        */
+:root, [data-theme] {
+
+  /* ── sand — terracotta-toned neutral; carries all five Figma neutral variables */
+  --sand-1: light-dark(#FBF8F2, #13100C);                 /* App canvas — deepest surface in the theme */
+  --sand-2: light-dark(#F5EEE1, #1D1A14);                 /* Default surface — page background */
+  --sand-3: light-dark(#EBE1D0, #26221A);                 /* Subtle surface — component background at rest */
+  --sand-4: light-dark(#E5DAC8, #2D281F);                 /* Component background — hover */
+  --sand-5: light-dark(#E2D6C2, #352F25);                 /* Component background — active / selected */
+  --sand-6: light-dark(#DFD3BD, #3D372C);                 /* Subtle border — separators, dividers, decorative outlines */
+  --sand-7: light-dark(#D0C2A9, #4F4738);                 /* Component border — decorative, non-load-bearing */
+  --sand-8: light-dark(#C8B89C, #635948);                 /* Component border — hover */
+  --sand-9: light-dark(#8F8572, #7C7364);                 /* Solid fill — buttons, filled chips, meaningful graphics */
+  --sand-10: light-dark(#817866, #8A8273);                /* Solid fill — hover */
+  --sand-11: light-dark(#615A4D, #A0998C);                /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --sand-12: light-dark(#1C1A17, #F3ECE0);                /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --sand-edge: light-dark(#83745A, #847A67);              /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --sand-press: light-dark(#8C816E, #847B6C);             /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── terracotta */
+  --terracotta-1: light-dark(#FBF7F6, #160F0C);           /* App canvas — deepest surface in the theme */
+  --terracotta-2: light-dark(#FAEBE5, #221612);           /* Default surface — page background */
+  --terracotta-3: light-dark(#F6DCD3, #2F1D16);           /* Subtle surface — component background at rest */
+  --terracotta-4: light-dark(#F4D4C8, #3B231B);           /* Component background — hover */
+  --terracotta-5: light-dark(#F2CCBE, #45281F);           /* Component background — active / selected */
+  --terracotta-6: light-dark(#F1C4B5, #513024);           /* Subtle border — separators, dividers, decorative outlines */
+  --terracotta-7: light-dark(#EBB5A2, #673C2D);           /* Component border — decorative, non-load-bearing */
+  --terracotta-8: light-dark(#DF9C85, #854B37);           /* Component border — hover */
+  --terracotta-9: light-dark(#B55634, #DF7D5A);           /* Solid fill — buttons, filled chips, meaningful graphics */
+  --terracotta-10: light-dark(#A64926, #F08B68);          /* Solid fill — hover */
+  --terracotta-11: light-dark(#90462B, #D1886E);          /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --terracotta-12: light-dark(#4C281B, #F8D5C9);          /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --terracotta-edge: light-dark(#A56751, #A96C57);        /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --terracotta-press: light-dark(#9A3E1B, #D2714E);       /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── ocher */
+  --ocher-1: light-dark(#FAF8F6, #13100B);                /* App canvas — deepest surface in the theme */
+  --ocher-2: light-dark(#F4EDE3, #1E1810);                /* Default surface — page background */
+  --ocher-3: light-dark(#ECE0CF, #292113);                /* Subtle surface — component background at rest */
+  --ocher-4: light-dark(#E8D9C4, #332817);                /* Component background — hover */
+  --ocher-5: light-dark(#E5D3B9, #3C2E1A);                /* Component background — active / selected */
+  --ocher-6: light-dark(#E1CCAF, #46361E);                /* Subtle border — separators, dividers, decorative outlines */
+  --ocher-7: light-dark(#D9BF9A, #5A4525);                /* Component border — decorative, non-load-bearing */
+  --ocher-8: light-dark(#C9A97A, #73582C);                /* Component border — hover */
+  --ocher-9: light-dark(#E9B86C, #E9B86C);                /* Solid fill — buttons, filled chips, meaningful graphics */
+  --ocher-10: light-dark(#DAA95D, #F9C77B);               /* Solid fill — hover */
+  --ocher-11: light-dark(#785514, #B79460);               /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --ocher-12: light-dark(#412F14, #ECDCC5);               /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --ocher-edge: light-dark(#8F7244, #93764A);             /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --ocher-press: light-dark(#CE9E52, #DCAB5F);            /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── purple */
+  --purple-1: light-dark(#F9F8F9, #121012);               /* App canvas — deepest surface in the theme */
+  --purple-2: light-dark(#F2ECF1, #1C181C);               /* Default surface — page background */
+  --purple-3: light-dark(#E8DFE7, #262026);               /* Subtle surface — component background at rest */
+  --purple-4: light-dark(#E3D8E2, #2F272E);               /* Component background — hover */
+  --purple-5: light-dark(#DED1DD, #372D36);               /* Component background — active / selected */
+  --purple-6: light-dark(#DACAD8, #413540);               /* Subtle border — separators, dividers, decorative outlines */
+  --purple-7: light-dark(#D0BCCE, #534351);               /* Component border — decorative, non-load-bearing */
+  --purple-8: light-dark(#BEA6BB, #6A5568);               /* Component border — hover */
+  --purple-9: light-dark(#CCA6C7, #C09CBC);               /* Solid fill — buttons, filled chips, meaningful graphics */
+  --purple-10: light-dark(#BD99B9, #D0ABCB);              /* Solid fill — hover */
+  --purple-11: light-dark(#6D526A, #AC92A9);              /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --purple-12: light-dark(#3B2E3A, #E6DAE4);              /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --purple-edge: light-dark(#867084, #8A7487);            /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --purple-press: light-dark(#B28EAE, #B490B0);           /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── info */
+  --info-1: light-dark(#F6F9FC, #0C1117);                 /* App canvas — deepest surface in the theme */
+  --info-2: light-dark(#E5F0FB, #121A23);                 /* Default surface — page background */
+  --info-3: light-dark(#D3E5F8, #162331);                 /* Subtle surface — component background at rest */
+  --info-4: light-dark(#C8DEF6, #1A2B3D);                 /* Component background — hover */
+  --info-5: light-dark(#BED9F5, #1D3248);                 /* Component background — active / selected */
+  --info-6: light-dark(#B4D3F4, #233B55);                 /* Subtle border — separators, dividers, decorative outlines */
+  --info-7: light-dark(#A1C8F0, #2B4B6C);                 /* Component border — decorative, non-load-bearing */
+  --info-8: light-dark(#83B3E5, #34608C);                 /* Component border — hover */
+  --info-9: light-dark(#2675BD, #3D8AD4);                 /* Solid fill — buttons, filled chips, meaningful graphics */
+  --info-10: light-dark(#1368AF, #4C99E4);                /* Solid fill — hover */
+  --info-11: light-dark(#205D96, #689ED5);                /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --info-12: light-dark(#193550, #C9E1FA);                /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --info-edge: light-dark(#4C7AA9, #517EAC);              /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --info-press: light-dark(#025DA2, #317FC8);             /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── success */
+  --success-1: light-dark(#F7F9F7, #0D120E);              /* App canvas — deepest surface in the theme */
+  --success-2: light-dark(#E7F2E9, #131C15);              /* Default surface — page background */
+  --success-3: light-dark(#D6E8D9, #18261B);              /* Subtle surface — component background at rest */
+  --success-4: light-dark(#CCE3D0, #1D2F21);              /* Component background — hover */
+  --success-5: light-dark(#C3DEC7, #223726);              /* Component background — active / selected */
+  --success-6: light-dark(#BAD9BF, #28402D);              /* Subtle border — separators, dividers, decorative outlines */
+  --success-7: light-dark(#A9CFAF, #315238);              /* Component border — decorative, non-load-bearing */
+  --success-8: light-dark(#8CBD95, #3D6947);              /* Component border — hover */
+  --success-9: light-dark(#348149, #53A066);              /* Solid fill — buttons, filled chips, meaningful graphics */
+  --success-10: light-dark(#24733D, #62AF74);             /* Solid fill — hover */
+  --success-11: light-dark(#2B673B, #70A67B);             /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --success-12: light-dark(#1F3A25, #CEE5D1);             /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --success-edge: light-dark(#53815C, #588561);           /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --success-press: light-dark(#176933, #48945B);          /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── warning */
+  --warning-1: light-dark(#FBF8F5, #160F09);              /* App canvas — deepest surface in the theme */
+  --warning-2: light-dark(#FAECE0, #22170D);              /* Default surface — page background */
+  --warning-3: light-dark(#F6DDC9, #2F1E0E);              /* Subtle surface — component background at rest */
+  --warning-4: light-dark(#F4D5BC, #3B240F);              /* Component background — hover */
+  --warning-5: light-dark(#F2CEAF, #452A10);              /* Component background — active / selected */
+  --warning-6: light-dark(#F0C7A3, #513112);              /* Subtle border — separators, dividers, decorative outlines */
+  --warning-7: light-dark(#EBB88C, #673E13);              /* Component border — decorative, non-load-bearing */
+  --warning-8: light-dark(#DF9F66, #854E10);              /* Component border — hover */
+  --warning-9: light-dark(#FEA247, #FFA958);              /* Solid fill — buttons, filled chips, meaningful graphics */
+  --warning-10: light-dark(#F29226, #FEC08A);             /* Solid fill — hover */
+  --warning-11: light-dark(#894C00, #D08A48);             /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --warning-12: light-dark(#4C2903, #F8D7BC);             /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --warning-edge: light-dark(#A5692F, #A86E37);           /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --warning-press: light-dark(#E68710, #FA9931);          /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── error */
+  --error-1: light-dark(#FDF7F6, #180E0D);                /* App canvas — deepest surface in the theme */
+  --error-2: light-dark(#FFE9E6, #261412);                /* Default surface — page background */
+  --error-3: light-dark(#FFD8D4, #351917);                /* Subtle surface — component background at rest */
+  --error-4: light-dark(#FFCEC9, #411E1C);                /* Component background — hover */
+  --error-5: light-dark(#FFC5C0, #4D2220);                /* Component background — active / selected */
+  --error-6: light-dark(#FFBDB6, #5A2825);                /* Subtle border — separators, dividers, decorative outlines */
+  --error-7: light-dark(#FCABA4, #73322E);                /* Component border — decorative, non-load-bearing */
+  --error-8: light-dark(#F28F87, #943D3A);                /* Component border — hover */
+  --error-9: light-dark(#D03C3C, #E7524F);                /* Solid fill — buttons, filled chips, meaningful graphics */
+  --error-10: light-dark(#C02B2F, #F8625D);               /* Solid fill — hover */
+  --error-11: light-dark(#A53231, #E87A73);               /* Accessible text + meaningful icons (solved ≥4.5:1) */
+  --error-12: light-dark(#551F1D, #FFD2CD);               /* High-contrast text — headings, emphasis (solved ≥7:1) */
+  --error-edge: light-dark(#B85B55, #BB605A);             /* Boundary — solved ≥3:1 vs every surface (1.4.11) */
+  --error-press: light-dark(#B31B24, #DB4746);            /* Solid fill — pressed; keeps the step-9 foreground legal */
+
+  /* ── alpha primitives — the only four in the system ───────────────────── */
+  --alpha-scrim: light-dark(rgb(28 26 23 / 0.55), rgb(8 6 4 / 0.72));/* Modal / sheet backdrop. Deeper in dark because the canvas is already dark. */
+  --alpha-shadow-key: light-dark(rgb(60 46 30 / 0.10), rgb(0 0 0 / 0.46));/* Tight contact shadow. Warm-tinted in light so elevation reads as sunlight, not grey. */
+  --alpha-shadow-ambient: light-dark(rgb(60 46 30 / 0.06), rgb(0 0 0 / 0.32));/* Wide diffuse shadow. */
+}
+
+/* ═══ LAYER 2 — SEMANTIC ALIASES ═══════════════════════════════════════════
+   The only colour tokens a component may reference. No raw hex below here.
+   Where light and dark point at DIFFERENT raw steps, that is deliberate.    */
+:root, [data-theme] {
+
+  /* ── surface ─────────────────────────────────────────────────────────── */
+  /* Page background. The default canvas everything sits on. */
+  --surface: var(--sand-2);
+  /* Cards, panels, popovers. Lighter than the page in BOTH themes — the paper-on-canvas model from the Figma screens. */
+  --surface-raised: light-dark(var(--sand-1), var(--sand-4));
+  /* Wells, track backgrounds, inset media. One level below the page. */
+  --surface-sunken: light-dark(var(--sand-3), var(--sand-1));
+  /* Sheets, modals, menus. Same value as -raised; separated by elevation and scrim, not hue. */
+  --surface-overlay: light-dark(var(--sand-1), var(--sand-4));
+  /* Tooltips, high-emphasis chips — deliberately opposite the theme. */
+  --surface-inverse: var(--sand-12);
+
+  /* ── on ─────────────────────────────────────────────────────────── */
+  /* Default body and heading text on any surface token. */
+  --on-surface: var(--sand-12);
+  /* Secondary text, metadata, placeholder. Still a full 4.5:1 — never dips below the body threshold. */
+  --on-surface-muted: var(--sand-11);
+  /* Text and icons in a disabled control. Exempt from 1.4.3; held near 3:1 anyway. */
+  --on-surface-disabled: var(--sand-9);
+  /* Text on --surface-inverse. */
+  --on-surface-inverse: var(--sand-1);
+
+  /* ── border ─────────────────────────────────────────────────────────── */
+  /* Dividers and decorative outlines ONLY. Never permitted on an interactive boundary. */
+  --border-subtle: var(--sand-6);
+  /* The only neutral border allowed to carry a control boundary — solved to ≥3:1 (1.4.11). */
+  --border-strong: var(--sand-edge);
+  /* Focus indicator colour. ≥3:1 against every surface token in both themes. */
+  --border-focus: light-dark(var(--terracotta-11), var(--terracotta-10));
+
+  /* ── interactive ─────────────────────────────────────────────────────────── */
+  /* Terracotta solid fill — the family's resting state. */
+  --interactive-primary: var(--terracotta-9);
+  /* Terracotta solid fill on hover. */
+  --interactive-primary-hover: var(--terracotta-10);
+  /* Terracotta solid fill while pressed. Solved so the SAME -on foreground still holds 4.5:1 — a plain step-11 swap would have put dark text on a dark fill. */
+  --interactive-primary-active: var(--terracotta-press);
+  /* Disabled fill — neutral, so no family reads as available. */
+  --interactive-primary-disabled: var(--sand-5);
+  /* Foreground on the terracotta solid. Theme-conditional: dark mode brightens the solid, so the foreground flips. This is the clearest case of dark mode not being an inversion. */
+  --interactive-primary-on: var(--sand-1);
+  /* Foreground on a disabled fill. Exempt from 1.4.3 — pair with a non-colour cue. */
+  --interactive-primary-on-disabled: var(--sand-10);
+  /* Terracotta tinted fill — chips, tags, selected rows. */
+  --interactive-primary-subtle: var(--terracotta-3);
+  /* Terracotta tinted fill on hover. */
+  --interactive-primary-subtle-hover: var(--terracotta-4);
+  /* Terracotta tinted fill while pressed. */
+  --interactive-primary-subtle-active: var(--terracotta-5);
+  /* Text and icons on the terracotta tinted fill, at any of its three states. */
+  --interactive-primary-on-subtle: var(--terracotta-11);
+  /* Terracotta boundary at ≥3:1. MANDATORY on any terracotta fill that is not itself 3:1 against the surface. */
+  --interactive-primary-border: var(--terracotta-edge);
+  /* Ocher solid fill — the family's resting state. */
+  --interactive-accent-placeholder1: var(--ocher-9);
+  /* Ocher solid fill on hover. */
+  --interactive-accent-placeholder1-hover: var(--ocher-10);
+  /* Ocher solid fill while pressed. Solved so the SAME -on foreground still holds 4.5:1 — a plain step-11 swap would have put dark text on a dark fill. */
+  --interactive-accent-placeholder1-active: var(--ocher-press);
+  /* Disabled fill — neutral, so no family reads as available. */
+  --interactive-accent-placeholder1-disabled: var(--sand-5);
+  /* Foreground on the ocher solid. Theme-conditional: dark mode brightens the solid, so the foreground flips. This is the clearest case of dark mode not being an inversion. */
+  --interactive-accent-placeholder1-on: light-dark(var(--sand-12), var(--sand-1));
+  /* Foreground on a disabled fill. Exempt from 1.4.3 — pair with a non-colour cue. */
+  --interactive-accent-placeholder1-on-disabled: var(--sand-10);
+  /* Ocher tinted fill — chips, tags, selected rows. */
+  --interactive-accent-placeholder1-subtle: var(--ocher-3);
+  /* Ocher tinted fill on hover. */
+  --interactive-accent-placeholder1-subtle-hover: var(--ocher-4);
+  /* Ocher tinted fill while pressed. */
+  --interactive-accent-placeholder1-subtle-active: var(--ocher-5);
+  /* Text and icons on the ocher tinted fill, at any of its three states. */
+  --interactive-accent-placeholder1-on-subtle: var(--ocher-11);
+  /* Ocher boundary at ≥3:1. MANDATORY on any ocher fill that is not itself 3:1 against the surface. */
+  --interactive-accent-placeholder1-border: var(--ocher-edge);
+  /* Purple solid fill — the family's resting state. */
+  --interactive-accent-placeholder2: var(--purple-9);
+  /* Purple solid fill on hover. */
+  --interactive-accent-placeholder2-hover: var(--purple-10);
+  /* Purple solid fill while pressed. Solved so the SAME -on foreground still holds 4.5:1 — a plain step-11 swap would have put dark text on a dark fill. */
+  --interactive-accent-placeholder2-active: var(--purple-press);
+  /* Disabled fill — neutral, so no family reads as available. */
+  --interactive-accent-placeholder2-disabled: var(--sand-5);
+  /* Foreground on the purple solid. Theme-conditional: dark mode brightens the solid, so the foreground flips. This is the clearest case of dark mode not being an inversion. */
+  --interactive-accent-placeholder2-on: light-dark(var(--sand-12), var(--sand-1));
+  /* Foreground on a disabled fill. Exempt from 1.4.3 — pair with a non-colour cue. */
+  --interactive-accent-placeholder2-on-disabled: var(--sand-10);
+  /* Purple tinted fill — chips, tags, selected rows. */
+  --interactive-accent-placeholder2-subtle: var(--purple-3);
+  /* Purple tinted fill on hover. */
+  --interactive-accent-placeholder2-subtle-hover: var(--purple-4);
+  /* Purple tinted fill while pressed. */
+  --interactive-accent-placeholder2-subtle-active: var(--purple-5);
+  /* Text and icons on the purple tinted fill, at any of its three states. */
+  --interactive-accent-placeholder2-on-subtle: var(--purple-11);
+  /* Purple boundary at ≥3:1. MANDATORY on any purple fill that is not itself 3:1 against the surface. */
+  --interactive-accent-placeholder2-border: var(--purple-edge);
+  /* Ghost control at rest — no fill. */
+  --interactive-ghost: transparent;
+  /* Ghost hover fill. */
+  --interactive-ghost-hover: light-dark(var(--sand-3), var(--sand-4));
+  /* Ghost pressed fill. */
+  --interactive-ghost-active: light-dark(var(--sand-4), var(--sand-5));
+  /* Disabled ghost — still no fill; the label carries the state. */
+  --interactive-ghost-disabled: transparent;
+  /* Ghost label and icon. */
+  --interactive-ghost-on: var(--sand-12);
+  /* Disabled ghost label. Exempt from 1.4.3. */
+  --interactive-ghost-on-disabled: var(--sand-9);
+  /* Boundary for a ghost control that must still read as a control (outline button). */
+  --interactive-ghost-border: var(--sand-edge);
+
+  /* ── accent ─────────────────────────────────────────────────────────── */
+  /* Accent 1 (terracotta) solid — category colour, chart series, avatar. */
+  --accent-1: var(--terracotta-9);
+  /* Accent 1 tinted background. */
+  --accent-1-subtle: var(--terracotta-3);
+  /* Accent 1 boundary at ≥3:1. */
+  --accent-1-border: var(--terracotta-edge);
+  /* Accent 1 as accessible text. */
+  --accent-1-text: var(--terracotta-11);
+  /* Foreground on the accent 1 solid. */
+  --accent-1-on: var(--sand-1);
+  /* Accent 2 (ocher) solid — category colour, chart series, avatar. */
+  --accent-2: var(--ocher-9);
+  /* Accent 2 tinted background. */
+  --accent-2-subtle: var(--ocher-3);
+  /* Accent 2 boundary at ≥3:1. */
+  --accent-2-border: var(--ocher-edge);
+  /* Accent 2 as accessible text. */
+  --accent-2-text: var(--ocher-11);
+  /* Foreground on the accent 2 solid. */
+  --accent-2-on: light-dark(var(--sand-12), var(--sand-1));
+  /* Accent 3 (purple) solid — category colour, chart series, avatar. */
+  --accent-3: var(--purple-9);
+  /* Accent 3 tinted background. */
+  --accent-3-subtle: var(--purple-3);
+  /* Accent 3 boundary at ≥3:1. */
+  --accent-3-border: var(--purple-edge);
+  /* Accent 3 as accessible text. */
+  --accent-3-text: var(--purple-11);
+  /* Foreground on the accent 3 solid. */
+  --accent-3-on: light-dark(var(--sand-12), var(--sand-1));
+
+  /* ── feedback ─────────────────────────────────────────────────────────── */
+  /* info banner / inline-message background. */
+  --feedback-info-surface: var(--info-2);
+  /* info banner boundary at ≥3:1 — part of how status survives without colour (1.4.1). */
+  --feedback-info-border: var(--info-edge);
+  /* info status icon. A meaningful graphic, so ≥3:1 required; lands at ≥4.5:1. */
+  --feedback-info-icon: var(--info-11);
+  /* info message text at ≥7:1. */
+  --feedback-info-text: var(--info-12);
+  /* warning banner / inline-message background. */
+  --feedback-warning-surface: var(--warning-2);
+  /* warning banner boundary at ≥3:1 — part of how status survives without colour (1.4.1). */
+  --feedback-warning-border: var(--warning-edge);
+  /* warning status icon. A meaningful graphic, so ≥3:1 required; lands at ≥4.5:1. */
+  --feedback-warning-icon: var(--warning-11);
+  /* warning message text at ≥7:1. */
+  --feedback-warning-text: var(--warning-12);
+  /* success banner / inline-message background. */
+  --feedback-success-surface: var(--success-2);
+  /* success banner boundary at ≥3:1 — part of how status survives without colour (1.4.1). */
+  --feedback-success-border: var(--success-edge);
+  /* success status icon. A meaningful graphic, so ≥3:1 required; lands at ≥4.5:1. */
+  --feedback-success-icon: var(--success-11);
+  /* success message text at ≥7:1. */
+  --feedback-success-text: var(--success-12);
+  /* error banner / inline-message background. */
+  --feedback-error-surface: var(--error-2);
+  /* error banner boundary at ≥3:1 — part of how status survives without colour (1.4.1). */
+  --feedback-error-border: var(--error-edge);
+  /* error status icon. A meaningful graphic, so ≥3:1 required; lands at ≥4.5:1. */
+  --feedback-error-icon: var(--error-11);
+  /* error message text at ≥7:1. */
+  --feedback-error-text: var(--error-12);
+}
+
+/* ═══ LAYER 3 — DIMENSION ══════════════════════════════════════════════════ */
+:root, [data-theme] {
+
+  /* ── spacing · base unit 4px ─────────────────────────────────────────────
+     sp-1…sp-8 reproduce the Figma Spacing collection exactly.
+     sp-9/sp-10 are additions for desktop section rhythm.                    */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --sp-8: 64px;
+  --sp-9: 96px;
+  --sp-10: 128px;
+
+  /* semantic spacing — which step applies at which level.
+     The app should feel light, so the jump BETWEEN groups is always at least
+     two steps larger than the gap inside one.                               */
+  --space-inset-control: var(--sp-3) var(--sp-5); /* inside a control → 44px min height at label-lg */
+  --space-inset-card: var(--sp-5);                /* inside a card */
+  --space-inset-sheet: var(--sp-6);               /* inside a sheet or modal */
+  --space-gap-inline: var(--sp-2);                /* icon ↔ its own label. Never widen this */
+  --space-gap-related: var(--sp-3);               /* atoms that belong together: label+field, title+subtitle */
+  --space-gap-stack: var(--sp-4);                 /* between controls inside one molecule */
+  --space-gap-group: var(--sp-6);                 /* between molecules that do NOT belong together */
+  --space-section: var(--sp-7);                   /* between sections, mobile */
+  --space-section-lg: var(--sp-9);                /* between sections, ≥lg */
+
+  /* ── touch targets — WCAG 2.5.8 ──────────────────────────────────────── */
+  --target-min: 24px;      /* absolute floor; inline controls inside prose only */
+  --target-primary: 44px;  /* every primary action */
+  --target-comfort: 56px;  /* one-handed reach, noisy room, gloved or shaky hands */
+  --target-guided: 64px;   /* kindergarten / assisted use — session choice cards */
+
+  /* ── radius ──────────────────────────────────────────────────────────── */
+  --radius-xs: 4px;        /* checkbox, swatch, tag */
+  --radius-sm: 8px;        /* Figma Corner/Small — inputs, small media */
+  --radius-md: 12px;       /* Figma Corner/Medium — cards */
+  --radius-lg: 16px;       /* panels, large media */
+  --radius-xl: 24px;       /* sheets, bottom drawers */
+  --radius-full: 999px;    /* pills and circles */
+  --radius-control: var(--radius-full);  /* buttons — from the Figma button geometry */
+  --radius-input: var(--radius-sm);
+  --radius-card: var(--radius-md);
+  --radius-panel: var(--radius-lg);
+  --radius-sheet: var(--radius-xl);
+
+  /* ── border width ────────────────────────────────────────────────────── */
+  --border-width-hairline: 1px;   /* dividers, subtle outlines */
+  --border-width-regular: 1.5px;  /* control boundaries — 3:1 without looking heavy */
+  --border-width-thick: 2px;      /* selected / current */
+  --border-width-focus: 3px;      /* focus ring only */
+
+  /* ── elevation ───────────────────────────────────────────────────────────
+     Geometry is identical in both themes; only colours are themed.
+     LIGHT: the warm shadow does the work; the ring is transparent.
+     DARK : shadow barely reads, so elevation comes from BOTH
+            surface-lightening (--surface-raised = sand-4, above the sand-2
+            canvas) AND a 1px inset ring. Stated strategy: both, always.     */
+  --elevation-ring: light-dark(transparent, var(--sand-7));
+  --elevation-0: none;
+  --elevation-1: 0 1px 2px var(--alpha-shadow-key), 0 1px 3px -1px var(--alpha-shadow-ambient), inset 0 0 0 1px var(--elevation-ring);
+  --elevation-2: 0 2px 4px -1px var(--alpha-shadow-key), 0 8px 16px -6px var(--alpha-shadow-ambient), inset 0 0 0 1px var(--elevation-ring);
+  --elevation-3: 0 4px 8px -2px var(--alpha-shadow-key), 0 20px 40px -12px var(--alpha-shadow-ambient), inset 0 0 0 1px var(--elevation-ring);
+
+  /* ── focus — ONE indicator, defined once ─────────────────────────────────
+     :focus-visible only, never :focus. offset 2px means the gap renders in
+     the parent surface, so the ring is only ever adjacent to a surface
+     token — which is why 3:1 holds even around a terracotta button.
+     Ring radius = element radius + offset (browsers do this automatically
+     for outline; match it manually if you fake a ring with box-shadow).
+     2.4.11: never clip focus — no overflow:hidden on a focusable ancestor
+     without at least --focus-ring-clearance of padding.                     */
+  --focus-ring-width: var(--border-width-focus);
+  --focus-ring-offset: 2px;
+  --focus-ring-color: var(--border-focus);
+  --focus-ring-style: solid;
+  --focus-ring: var(--focus-ring-width) var(--focus-ring-style) var(--focus-ring-color);
+  --focus-ring-clearance: 5px;   /* focus-ring-width + offset */
+
+  /* ── motion ──────────────────────────────────────────────────────────────
+     No token loops or flashes, so 2.3.1 is satisfied structurally.          */
+  --motion-duration-instant: 80ms;
+  --motion-duration-fast: 140ms;
+  --motion-duration-base: 220ms;
+  --motion-duration-slow: 340ms;
+  --motion-duration-slower: 520ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --motion-ease-entrance: cubic-bezier(0, 0, 0.2, 1);
+  --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --motion-ease-emphasis: cubic-bezier(0.2, 0.9, 0.1, 1);
+  --motion-travel-sm: 8px;
+  --motion-travel-md: 16px;
+  --motion-travel-lg: 32px;
+  /* named semantic motions — use as the tail of a transition shorthand */
+  --motion-enter: var(--motion-duration-base) var(--motion-ease-entrance);
+  --motion-exit: var(--motion-duration-fast) var(--motion-ease-exit);
+  --motion-toggle: var(--motion-duration-fast) var(--motion-ease-standard);
+  --motion-sheet-slide: var(--motion-duration-slow) var(--motion-ease-emphasis);
+  --motion-emphasis: var(--motion-duration-slower) var(--motion-ease-emphasis);
+
+  /* ── z-index ─────────────────────────────────────────────────────────── */
+  --z-base: 0;
+  --z-raised: 10;     /* lifted card, inline popover */
+  --z-sticky: 100;    /* sticky nav / session bar */
+  --z-overlay: 200;   /* scrim */
+  --z-sheet: 300;     /* modal, bottom sheet */
+  --z-tooltip: 400;
+  --z-toast: 500;     /* above everything, including a sheet */
+
+  /* ── iconography — Lucide (lucide-animated) · [LOCKED] ───────────────────
+     24px grid and 2px stroke reproduced exactly, unrounded.
+     Icon size pairs with the ADJACENT TEXT STEP, never the container:
+       body-sm / label-md → icon-sm      body-md / label-lg → icon-md
+       heading-sm / -md   → icon-lg      heading-lg and up  → icon-xl
+     Optically centre on cap height, not bounding box: nudge a text-adjacent
+     icon by --icon-optical-nudge. A meaningful icon takes a step-11 token
+     (≥3:1, 1.4.11); a decorative one may take any.                          */
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+  --icon-size-xl: 32px;
+  --icon-stroke: 2px;
+  --icon-optical-nudge: -0.055em;
+
+  /* ── typography ──────────────────────────────────────────────────────────
+     Two families. Fluid between 393px (iPhone 16) and 1440px (desktop).     */
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-text: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+
+  /* display-xl — Hero / launch headline. One per screen, ≤6 words.
+     iPhone 16 393px → 40px · tablet 834px → 50.1px · desktop 1440px → 64px */
+  --type-display-xl-size: clamp(40px, calc(30.991px + 2.2923vw), 64px);
+  --type-display-xl-line: 1.04;
+  --type-display-xl-tracking: -0.022em;
+  --type-display-xl-weight: var(--font-weight-bold);
+  --type-display-xl-family: var(--font-display);
+
+  /* display-lg — Session titles, empty-state headlines.
+     iPhone 16 393px → 32px · tablet 834px → 37.1px · desktop 1440px → 44px */
+  --type-display-lg-size: clamp(32px, calc(27.496px + 1.1461vw), 44px);
+  --type-display-lg-line: 1.08;
+  --type-display-lg-tracking: -0.018em;
+  --type-display-lg-weight: var(--font-weight-bold);
+  --type-display-lg-family: var(--font-display);
+
+  /* stage — Musie speaking. The second line of a stage headline: same display
+     family and the same 26px Figma step as heading-lg, but regular weight and
+     an open line height, so a full sentence reads as a spoken address rather
+     than as a title. Not a heading step — it never carries the heading role.
+     iPhone 16 393px → 26px · tablet 834px → 29.4px · desktop 1440px → 34px */
+  --type-stage-size: clamp(26px, calc(22.997px + 0.7641vw), 34px);
+  --type-stage-line: 1.28;
+  --type-stage-tracking: -0.008em;
+  --type-stage-weight: var(--font-weight-regular);
+  --type-stage-family: var(--font-display);
+
+  /* heading-lg — Primary screen headline — the Figma 26px step.
+     iPhone 16 393px → 26px · tablet 834px → 29.4px · desktop 1440px → 34px */
+  --type-heading-lg-size: clamp(26px, calc(22.997px + 0.7641vw), 34px);
+  --type-heading-lg-line: 1.18;
+  --type-heading-lg-tracking: -0.012em;
+  --type-heading-lg-weight: var(--font-weight-bold);
+  --type-heading-lg-family: var(--font-display);
+
+  /* heading-md — Section headline inside a screen.
+     iPhone 16 393px → 22px · tablet 834px → 23.7px · desktop 1440px → 26px */
+  --type-heading-md-size: clamp(22px, calc(20.499px + 0.3820vw), 26px);
+  --type-heading-md-line: 1.25;
+  --type-heading-md-tracking: -0.008em;
+  --type-heading-md-weight: var(--font-weight-medium);
+  --type-heading-md-family: var(--font-display);
+
+  /* heading-sm — Card title, group label, subsection.
+     iPhone 16 393px → 19px · tablet 834px → 19.8px · desktop 1440px → 21px */
+  --type-heading-sm-size: clamp(19px, calc(18.249px + 0.1910vw), 21px);
+  --type-heading-sm-line: 1.3;
+  --type-heading-sm-tracking: -0.004em;
+  --type-heading-sm-weight: var(--font-weight-medium);
+  --type-heading-sm-family: var(--font-display);
+
+  /* body-lg — Guided-exercise prose — the reading size during a session.
+     iPhone 16 393px → 19px · tablet 834px → 19.4px · desktop 1440px → 20px */
+  --type-body-lg-size: clamp(19px, calc(18.625px + 0.0955vw), 20px);
+  --type-body-lg-line: 1.6;
+  --type-body-lg-tracking: 0;
+  --type-body-lg-weight: var(--font-weight-regular);
+  --type-body-lg-family: var(--font-text);
+
+  /* body-md — Default body. The MINIMUM body size in the system.
+     iPhone 16 393px → 17px · tablet 834px → 17.4px · desktop 1440px → 18px */
+  --type-body-md-size: clamp(17px, calc(16.625px + 0.0955vw), 18px);
+  --type-body-md-line: 1.6;
+  --type-body-md-tracking: 0;
+  --type-body-md-weight: var(--font-weight-regular);
+  --type-body-md-family: var(--font-text);
+
+  /* body-sm — Metadata, timestamps, captions. NEVER essential prose.
+     iPhone 16 393px → 15px · tablet 834px → 15.4px · desktop 1440px → 16px */
+  --type-body-sm-size: clamp(15px, calc(14.625px + 0.0955vw), 16px);
+  --type-body-sm-line: 1.55;
+  --type-body-sm-tracking: 0.002em;
+  --type-body-sm-weight: var(--font-weight-regular);
+  --type-body-sm-family: var(--font-text);
+
+  /* label-lg — Primary button and tab labels.
+     iPhone 16 393px → 17px · tablet 834px → 17.4px · desktop 1440px → 18px */
+  --type-label-lg-size: clamp(17px, calc(16.625px + 0.0955vw), 18px);
+  --type-label-lg-line: 1.2;
+  --type-label-lg-tracking: 0.002em;
+  --type-label-lg-weight: var(--font-weight-medium);
+  --type-label-lg-family: var(--font-text);
+
+  /* label-md — Compact controls, chips, table headers.
+     iPhone 16 393px → 15px · tablet 834px → 15.4px · desktop 1440px → 16px */
+  --type-label-md-size: clamp(15px, calc(14.625px + 0.0955vw), 16px);
+  --type-label-md-line: 1.2;
+  --type-label-md-tracking: 0.006em;
+  --type-label-md-weight: var(--font-weight-medium);
+  --type-label-md-family: var(--font-text);
+
+  /* Body-copy floor: 17px at the 393px reference. Any step whose 393px value
+     falls below that is label/metadata only — body-sm and label-md are
+     therefore barred from essential prose.                                  */
+  --type-body-min-size: var(--type-body-md-size);
+
+  /* Line length. German runs ~30% longer than English, so measures are set
+     from the German string; headings get a tighter measure so compounds do
+     not strand a single word on the last line.                              */
+  --measure-body: 62ch;
+  --measure-heading: 26ch;
+  --text-wrap-heading: balance;  /* display + heading steps */
+  --text-wrap-body: pretty;      /* body steps and 2-line labels */
+  --text-hyphens: auto;          /* required for German compounds at 393px */
+
+  /* ── breakpoints & grid ──────────────────────────────────────────────────
+     Mirror values only — a media query cannot read a custom property. The
+     same numbers live in the JSON so Figma and code stay in step.           */
+  --bp-sm: 480px;   /* large phone */
+  --bp-md: 768px;   /* tablet portrait — the group-of-8 setting */
+  --bp-lg: 1024px;  /* tablet landscape / small laptop */
+  --bp-xl: 1280px;  /* desktop */
+  --container-max: 1200px;
+  --gutter: var(--sp-4);
+  --columns: 4;
+  --grid-gap: var(--sp-4);
+}
+
+@media (min-width: 768px)  { :root, [data-theme] { --gutter: var(--sp-5); --columns: 8;  --grid-gap: var(--sp-5); } }
+@media (min-width: 1024px) { :root, [data-theme] { --gutter: var(--sp-6); --columns: 12; --grid-gap: var(--sp-5); } }
+@media (min-width: 1280px) { :root, [data-theme] { --gutter: var(--sp-7); --columns: 12; --grid-gap: var(--sp-6); } }
+
+/* ═══ PREFERENCE OVERRIDES — honoured at the TOKEN level ══════════════════ */
+
+/* Reduced motion: durations collapse and travel goes to zero, so anything
+   built on these tokens becomes still without editing a component.         */
+@media (prefers-reduced-motion: reduce) {
+  :root, [data-theme] {
+    --motion-duration-instant: 1ms;
+    --motion-duration-fast: 1ms;
+    --motion-duration-base: 1ms;
+    --motion-duration-slow: 1ms;
+    --motion-duration-slower: 1ms;
+    --motion-travel-sm: 0px;
+    --motion-travel-md: 0px;
+    --motion-travel-lg: 0px;
+    --motion-ease-emphasis: linear;   /* no overshoot */
+  }
+}
+
+/* More contrast: borders and muted text step up, elevation stops depending
+   on shadow, the focus ring thickens.                                      */
+@media (prefers-contrast: more) {
+  :root, [data-theme] {
+    --border-subtle: var(--sand-edge);
+    --border-strong: var(--sand-11);
+    --on-surface-muted: var(--sand-12);
+    --on-surface-disabled: var(--sand-11);
+    --elevation-ring: var(--sand-edge);
+    --focus-ring-width: 4px;
+    --border-width-hairline: 1.5px;
+  }
+}
+
+/* Forced colours: hand the whole thing to the OS palette. */
+@media (forced-colors: active) {
+  :root, [data-theme] {
+    --border-subtle: CanvasText;
+    --border-strong: CanvasText;
+    --border-focus: Highlight;
+    --elevation-1: none; --elevation-2: none; --elevation-3: none;
+  }
+}

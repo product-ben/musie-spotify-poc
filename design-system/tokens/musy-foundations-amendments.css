@@ -1,0 +1,54 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MUSY — LAYER 1 AMENDMENTS, STAGED BY LAYER 2 · NOT YET PART OF FOUNDATIONS
+   ═══════════════════════════════════════════════════════════════════════════
+   Layer 1 is [LOCKED] and this pass does not amend it (brief §9). These two
+   tokens are the pass's only genuine token gaps (docs/08-token-gaps.md, G1/G2).
+   The brief instructs, per gap:
+     G1 §2.2  "Add --icon-stroke-sm: 1.5px as a Layer 1 token gap; flag it,
+               don't invent it locally"
+     G2 §5.9  "Outline should be dashed. Create a new token for that."
+
+   They are declared HERE rather than in musy-foundations.css so that:
+     · foundations stays byte-identical to the signed-off Layer 1;
+     · components can reference a real token instead of a local literal
+       (a component-level literal would be a defect under §4);
+     · absorbing them is a copy-paste into Layer 1 §Dimension, not a rewrite.
+
+   Load order: musy-foundations.css → THIS FILE → musy-components.css
+   Every component that consumes one of these is marked PROVISIONAL in
+   docs/07-components.md until Layer 1 absorbs them.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root, [data-theme] {
+
+  /* ── G1 · icon stroke, small size ────────────────────────────────────────
+     Belongs beside --icon-stroke in Layer 1 §Iconography.
+     Lucide's 2px stroke is drawn on a 24px grid. At --icon-size-sm (16px) it
+     renders as 3 grid units — heavier than the same glyph at 24px, and it
+     closes small counters, which is where a meaningful icon stops being
+     identifiable (conflict A2). Lucide's own guidance is to scale stroke with
+     size. 1.5px at 16px restores the 24px optical weight.
+     Pairing rule (unchanged from Layer 1): --icon-size-sm goes with body-sm /
+     label-md, so this is the stroke for metadata- and compact-control icons. */
+  --icon-stroke-sm: 1.5px;
+
+  /* ── G2 · dashed boundary style ──────────────────────────────────────────
+     Belongs beside --border-width-* in Layer 1 §Border width.
+     A style, not a width — so it composes with every existing width token
+     rather than duplicating the width scale. Layer 1 tokenised border COLOUR
+     and WIDTH but never STYLE; every boundary in the system was implicitly
+     solid. The Figma screens draw the screen container as
+     `1px dashed rgb(221,210,189)` — a dashed outline is an existing pattern in
+     the design, not a new idea, and Content Box is where it lands.
+     Semantics: dashed reads as "provisional / awaiting content / placeholder".
+     Use with --border-subtle. Never on an interactive boundary — a control
+     boundary must be --border-strong at >=3:1 (1.4.11), and dashing reduces the
+     perceived stroke, so a dashed control edge would undercut the ratio the
+     solid one was solved for. */
+  --border-style-solid: solid;
+  --border-style-dashed: dashed;
+}
+
+/* prefers-contrast: more — Layer 1 already steps --border-subtle up to
+   --sand-edge here. Dashing also survives forced-colors, since style is not a
+   colour property, so no forced-colors override is needed. */

@@ -1,0 +1,458 @@
+<!doctype html>
+<!-- lang is required: --text-hyphens: auto does nothing without it. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>musie — v0.4.1 (design system)</title>
+
+    <!-- Synchronously, before any stylesheet: it owns data-theme on <html>
+         and the musy-theme key, and setting it after first paint flashes. -->
+    <script src="design-system/tokens/theme-init.js"></script>
+
+    <!-- Load order is fixed by the handoff: foundations → amendments → components. -->
+    <link rel="stylesheet" href="design-system/tokens/musy-foundations.css" />
+    <link rel="stylesheet" href="design-system/tokens/musy-foundations-amendments.css" />
+    <link rel="stylesheet" href="design-system/components/musy-components.css" />
+
+    <style>
+      /* LAYOUT ONLY — no component styling lives here.
+         Every value resolves to a Layer 1 token, per the system's own rule
+         that a component-level literal is a defect. The three-pane scroll
+         layout is app furniture, not a component. */
+      body {
+        margin: 0;
+        position: relative; /* iOS 26+ Safari backdrops */
+        background-color: var(--surface);
+        color: var(--on-surface);
+        font-family: var(--type-body-md-family);
+        font-size: var(--type-body-md-size);
+        line-height: var(--type-body-md-line);
+      }
+      html {
+        scroll-snap-type: y mandatory;
+        scroll-behavior: smooth;
+      }
+      .app { isolation: isolate; } /* portaled popups clear local z-index */
+
+      .pane {
+        display: flex;
+        flex-direction: column;
+        scroll-snap-align: start;
+        padding: var(--sp-5) var(--gutter);
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+      .pane--hero { min-height: calc(100vh + var(--sp-5)); }
+      @supports (height: 100lvh) {
+        .pane { min-height: 100lvh; }
+        /* lvh is the LARGEST viewport: a collapsing address bar can only ever
+           shrink what is visible, never reveal what is below it. */
+        .pane--hero { min-height: calc(100lvh + var(--sp-5)); }
+      }
+
+      .pane__top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-gap-stack);
+      }
+      .pane__mid {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-gap-group);
+        text-align: center;
+      }
+      .pane__foot { display: flex; justify-content: center; }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-gap-stack);
+        align-items: center;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-gap-stack);
+        justify-content: center;
+      }
+
+      .pane--reveal {
+        max-width: var(--measure-body);
+        margin-inline: auto;
+        width: 100%;
+        justify-content: center;
+        gap: var(--space-gap-stack);
+        /* Room reserved for the pinned control, so it never comes to rest
+           over the player below it. */
+        padding-top: var(--sp-9);
+      }
+
+      .backtop {
+        position: fixed;
+        inset-block-start: var(--sp-3);
+        inset-inline: 0;
+        margin-inline: auto;
+        inline-size: fit-content;
+        z-index: var(--z-sticky);
+      }
+      .backtop[hidden] { display: none; }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <section class="pane pane--hero" id="hero">
+        <div class="pane__top">
+          <a class="musy-logo" href="index.html">
+            <img class="musy-logo__mark" src="design-system/assets/musy-logo.png" alt="" aria-hidden="true" />
+            <span class="musy-logo__wordmark">musie</span>
+          </a>
+          <span class="musy-badge musy-badge--primary-subtle" id="mode">Self-hosted</span>
+        </div>
+
+        <div class="pane__mid" id="controls"></div>
+
+        <div class="pane__foot">
+          <button type="button" class="musy-btn musy-btn--ghost" id="cue" hidden>
+            <span class="musy-btn__label">Scroll to see the player</span>
+            <svg
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              style="inline-size: var(--icon-size-md); block-size: var(--icon-size-md); stroke-width: var(--icon-stroke); flex: none;"
+            >
+              <path d="M12 5v14" /><path d="m19 12-7 7-7-7" />
+            </svg>
+            <span class="musy-spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </section>
+
+      <section class="pane" id="gate">
+        <div class="pane__mid">
+          <!-- The `stage` step: the system's own non-heading display size, for
+               "a full sentence that reads as a spoken address rather than as a
+               title". Exactly this sentence's job — so it stays a <p>. -->
+          <p
+            style="
+              margin: 0;
+              max-width: var(--measure-heading);
+              font-family: var(--type-stage-family);
+              font-size: var(--type-stage-size);
+              line-height: var(--type-stage-line);
+              letter-spacing: var(--type-stage-tracking);
+              font-weight: var(--type-stage-weight);
+              color: var(--on-surface);
+              text-wrap: var(--text-wrap-heading);
+              hyphens: var(--text-hyphens);
+            "
+          >
+            For the exercise, it would be better to not get influenced by the
+            track name and cover
+          </p>
+
+          <div class="row">
+            <button type="button" class="musy-btn musy-btn--primary" id="back">
+              <span class="musy-btn__label">Continue exercise, back up</span>
+              <span class="musy-spinner" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="musy-btn musy-btn--secondary" id="down">
+              <span class="musy-btn__label">Scroll down to player</span>
+              <span class="musy-spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane pane--reveal" id="reveal"></section>
+    </div>
+
+    <script type="module">
+      import { CARDS, cardByCode } from "./src/tracks.js";
+
+      // Lucide glyphs, inlined. In the real app these are <Icon glyph={Play} />;
+      // inline paths are preview scaffolding, exactly as in the clickdummy.
+      const GLYPH = {
+        play: '<polygon points="6 3 20 12 6 21 6 3" />',
+        pause: '<rect x="14" y="4" width="4" height="16" rx="1" /><rect x="6" y="4" width="4" height="16" rx="1" />',
+        restart: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />',
+        up: '<path d="M12 19V5" /><path d="m5 12 7-7 7 7" />',
+      };
+
+      const icon = (name, size = "md") => {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("viewBox", "0 0 24 24");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("fill", "none");
+        svg.setAttribute("stroke", "currentColor");
+        svg.setAttribute("stroke-linecap", "round");
+        svg.setAttribute("stroke-linejoin", "round");
+        svg.style.inlineSize = `var(--icon-size-${size})`;
+        svg.style.blockSize = `var(--icon-size-${size})`;
+        svg.style.strokeWidth = size === "sm" ? "var(--icon-stroke-sm)" : "var(--icon-stroke)";
+        svg.style.flex = "none";
+        if (name === "play") svg.setAttribute("fill", "currentColor");
+        svg.innerHTML = GLYPH[name];
+        return svg;
+      };
+
+      const el = (tag, props = {}, children = []) => {
+        const node = Object.assign(document.createElement(tag), props);
+        for (const child of [].concat(children)) if (child) node.append(child);
+        return node;
+      };
+
+      /** MM:SS, padded, so a countdown never changes width crossing a minute. */
+      const trackClock = (seconds) => {
+        const s = Math.max(0, Math.round(seconds));
+        return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+      };
+
+      const controls = document.getElementById("controls");
+      const revealPane = document.getElementById("reveal");
+      const hero = document.getElementById("hero");
+      const gate = document.getElementById("gate");
+      const cue = document.getElementById("cue");
+      const mode = document.getElementById("mode");
+
+      const code = new URLSearchParams(window.location.search).get("c");
+      const card = cardByCode(code);
+
+      if (!card?.audio) {
+        mode.hidden = true;
+        controls.replaceChildren(
+          el("div", { className: "musy-msg musy-msg--info" }, [
+            el("div", { className: "musy-msg__main" }, [
+              el("p", {
+                className: "musy-msg__text",
+                textContent: code
+                  ? `No card ${code} with self-hosted audio. Pick one below.`
+                  : "This link carries no card code. Pick one below.",
+              }),
+            ]),
+          ]),
+          el(
+            "div",
+            { className: "row" },
+            CARDS.filter((c) => c.audio).map((c) =>
+              el("a", { className: "musy-btn musy-btn--secondary", href: `?c=${c.code}` }, [
+                el("span", { className: "musy-btn__label", textContent: `Card ${c.code}` }),
+              ]),
+            ),
+          ),
+        );
+      } else {
+        // The design system's Music Player owns the transport UI and never an
+        // <audio> element — the consuming app holds the media and feeds
+        // position back. This audio element is that consuming app.
+        const audio = el("audio", { src: card.audio.src, preload: "metadata" });
+        document.body.append(audio);
+
+        // ── Hero: Track Button — the whole player inside one button ────────
+        const heroGlyph = el("span", { style: "display:flex" }, [icon("play", "md")]);
+        const heroTime = el("span", { className: "musy-mbtn__time", textContent: "00:00" });
+        const trackButton = el(
+          "button",
+          { type: "button", className: "musy-btn musy-btn--primary musy-mbtn" },
+          [
+            heroGlyph,
+            el("span", { className: "musy-btn__label", textContent: card.audio.title }),
+            el("span", { className: "musy-sr-only", id: "action" }),
+            heroTime,
+            el("span", { className: "musy-spinner", "aria-hidden": "true" }),
+          ],
+        );
+        trackButton.dataset.state = "paused";
+
+        controls.replaceChildren(
+          el("div", { className: "stack" }, [
+            el("span", {
+              style:
+                "font-family: var(--type-label-md-family); font-size: var(--type-label-md-size); font-weight: var(--type-label-md-weight); letter-spacing: var(--type-label-md-tracking); color: var(--on-surface-muted); text-transform: uppercase;",
+              textContent: `Card ${card.code}`,
+            }),
+            trackButton,
+          ]),
+        );
+
+        // ── Reveal: the full Music Player, 64px control plus scrubber ──────
+        const playerGlyph = el("span", { style: "display:flex" }, [icon("play", "lg")]);
+        const playerButton = el(
+          "button",
+          {
+            type: "button",
+            className: "musy-icon-btn musy-icon-btn--primary musy-icon-btn--guided",
+          },
+          [playerGlyph],
+        );
+
+        const fill = el("span", { className: "musy-mplayer__fill" });
+        const thumb = el("span", {
+          className: "musy-mplayer__thumb",
+          tabIndex: 0,
+          role: "slider",
+          "aria-label": "Playback position",
+        });
+        const track = el("span", { className: "musy-mplayer__track" });
+        const sliderControl = el("span", { className: "musy-mplayer__control" }, [track, fill, thumb]);
+        const slider = el("div", { className: "musy-mplayer__slider" }, [sliderControl]);
+
+        const elapsed = el("span", { textContent: "00:00" });
+        const remaining = el("span", { textContent: "−00:00" });
+
+        const player = el("div", { className: "musy-mplayer" }, [
+          playerButton,
+          el("div", { className: "musy-mplayer__main" }, [
+            el("span", { className: "musy-mplayer__title", textContent: card.audio.title }),
+            slider,
+            el("div", { className: "musy-mplayer__times" }, [elapsed, remaining]),
+          ]),
+        ]);
+        player.dataset.state = "paused";
+
+        const backUp = el(
+          "button",
+          { type: "button", className: "musy-btn musy-btn--ghost backtop", hidden: true },
+          [
+            icon("up", "md"),
+            el("span", { className: "musy-btn__label", textContent: "Scroll up to exercise" }),
+            el("span", { className: "musy-spinner", "aria-hidden": "true" }),
+          ],
+        );
+        backUp.addEventListener("click", () => hero.scrollIntoView({ behavior: "smooth" }));
+        document.body.append(backUp);
+
+        new IntersectionObserver(
+          ([entry]) => {
+            backUp.hidden = !entry.isIntersecting;
+          },
+          { threshold: 0.5 },
+        ).observe(revealPane);
+
+        revealPane.replaceChildren(
+          el("h2", {
+            style:
+              "margin: 0; font-family: var(--type-heading-md-family); font-size: var(--type-heading-md-size); font-weight: var(--type-heading-md-weight); line-height: var(--type-heading-md-line); letter-spacing: var(--type-heading-md-tracking); color: var(--on-surface);",
+            textContent: "The track",
+          }),
+          el("p", {
+            style:
+              "margin: 0; font-family: var(--type-body-sm-family); font-size: var(--type-body-sm-size); line-height: var(--type-body-sm-line); color: var(--on-surface-muted);",
+            textContent: card.audio.artist,
+          }),
+          player,
+        );
+
+        // ── Transport. Ended is a state: the glyph changes, not only the fill.
+        const transport = () => {
+          if (audio.ended) return "ended";
+          return audio.paused ? "paused" : "playing";
+        };
+
+        const paint = () => {
+          const state = transport();
+          const name = state === "playing" ? "pause" : state === "ended" ? "restart" : "play";
+          const action = state === "playing" ? "Pause" : state === "ended" ? "Play again" : "Play";
+
+          heroGlyph.replaceChildren(icon(name, "md"));
+          playerGlyph.replaceChildren(icon(name, "lg"));
+          trackButton.dataset.state = state;
+          player.dataset.state = state;
+          document.getElementById("action").textContent = `, ${action}`;
+          playerButton.setAttribute("aria-label", `${action}: ${card.audio.title}`);
+
+          const duration = audio.duration || 0;
+          const position = Math.min(audio.currentTime, duration);
+          // Counting DOWN: the only question a first-time listener has is how
+          // long they are committing to.
+          heroTime.textContent = trackClock(duration - position);
+          elapsed.textContent = trackClock(position);
+          remaining.textContent = `−${trackClock(duration - position)}`;
+
+          const ratio = duration ? (position / duration) * 100 : 0;
+          fill.style.inlineSize = `${ratio}%`;
+          thumb.style.insetInlineStart = `${ratio}%`;
+          thumb.setAttribute("aria-valuemin", "0");
+          thumb.setAttribute("aria-valuemax", String(Math.round(duration)));
+          thumb.setAttribute("aria-valuenow", String(Math.round(position)));
+          thumb.setAttribute("aria-valuetext", `${trackClock(position)} of ${trackClock(duration)}`);
+        };
+
+        const toggle = () => {
+          if (audio.ended) audio.currentTime = 0;
+          if (audio.paused) audio.play();
+          else audio.pause();
+        };
+        trackButton.addEventListener("click", toggle);
+        playerButton.addEventListener("click", toggle);
+
+        for (const event of ["play", "pause", "ended", "timeupdate", "loadedmetadata"]) {
+          audio.addEventListener(event, paint);
+        }
+        audio.addEventListener("loadedmetadata", () => {
+          mode.textContent = `Self-hosted · ${trackClock(audio.duration)}`;
+        });
+        audio.addEventListener("error", () => {
+          mode.className = "musy-badge musy-badge--error";
+          mode.textContent = "Audio failed to load";
+        });
+
+        // Scrubbing. base-ui's Slider gives arrow keys, Home/End and drag for
+        // free; reproduced here as preview scaffolding.
+        const seekTo = (clientX) => {
+          const box = sliderControl.getBoundingClientRect();
+          const ratio = Math.min(1, Math.max(0, (clientX - box.left) / box.width));
+          audio.currentTime = ratio * (audio.duration || 0);
+          paint();
+        };
+        slider.addEventListener("pointerdown", (event) => {
+          slider.setPointerCapture(event.pointerId);
+          slider.dataset.dragging = "";
+          seekTo(event.clientX);
+        });
+        slider.addEventListener("pointermove", (event) => {
+          if (slider.hasPointerCapture(event.pointerId)) seekTo(event.clientX);
+        });
+        slider.addEventListener("pointerup", (event) => {
+          slider.releasePointerCapture(event.pointerId);
+          delete slider.dataset.dragging;
+        });
+        thumb.addEventListener("keydown", (event) => {
+          const step = event.shiftKey ? 10 : 5;
+          const duration = audio.duration || 0;
+          const moves = {
+            ArrowLeft: () => (audio.currentTime -= step),
+            ArrowDown: () => (audio.currentTime -= step),
+            ArrowRight: () => (audio.currentTime += step),
+            ArrowUp: () => (audio.currentTime += step),
+            Home: () => (audio.currentTime = 0),
+            End: () => (audio.currentTime = duration),
+          };
+          if (!moves[event.key]) return;
+          event.preventDefault();
+          moves[event.key]();
+          paint();
+        });
+
+        cue.hidden = false;
+        cue.addEventListener("click", () => gate.scrollIntoView({ behavior: "smooth" }));
+        document
+          .getElementById("back")
+          .addEventListener("click", () => hero.scrollIntoView({ behavior: "smooth" }));
+        document
+          .getElementById("down")
+          .addEventListener("click", () => revealPane.scrollIntoView({ behavior: "smooth" }));
+
+        paint();
+      }
+    </script>
+  </body>
+</html>

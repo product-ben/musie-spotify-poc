@@ -1,0 +1,2901 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   MUSY — LAYER 2 · COMPONENT STYLES
+   ═══════════════════════════════════════════════════════════════════════════
+   Every declaration below resolves to a Layer 1 token, or to arithmetic over
+   Layer 1 tokens. There is no literal colour, no literal space, no literal
+   motion value in this file. The two exceptions are documented token gaps and
+   come from tokens/musy-foundations-amendments.css, not from here.
+
+   The only bare numbers in this file are:
+     · unitless multipliers inside calc() over a token   (var(--sp-1) * 2)
+     · 0 / 0deg / 100% / 50% — geometric identities, not design values
+     · 1px hairlines that Layer 1 itself defines as --border-width-hairline
+       (always referenced by token, never written as 1px)
+
+   LOAD ORDER
+     musy-foundations.css → musy-foundations-amendments.css → THIS FILE
+
+   CARD FLOOR
+     --musy-card-min (196px) is the third documented literal, and the only one
+     that is a measurement rather than a hairline. It is the narrowest a
+     selectable card can be and still hold its full anatomy — media, headline,
+     two description lines, badge row — without the badges going one-per-line.
+     Layer 1 has no card-scale track token to derive it from; this is token gap
+     G4, and the constant lives here until Layer 1 absorbs it. Shared by §07
+     Radio image cards and §13 Radio cards so the two grids cannot drift.      */
+
+:root { --musy-card-min: 196px; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+
+   STATE MODEL — base-ui (@base-ui/react v1)
+     Every component is built on a base-ui primitive, so state comes from
+     base-ui's own data attributes on the part itself — NOT from a hidden input
+     and a sibling selector. base-ui's Switch.Root and Radio.Root each render a
+     focusable element with the hidden <input> beside it, which is why
+     .musy-switch__track and .musy-radio__body ARE the primitives' roots.
+       hover     :hover              (pointer: fine only — see §0)
+       active    :active             [data-pressed]
+       focus     :focus-visible      — never :focus (Layer 1 policy)
+       disabled  :disabled           [data-disabled]
+       checked   [data-checked]  /  unchecked [data-unchecked]
+       pressed   [aria-pressed="true"]  (Toggle)
+       loading   [data-loading]
+       invalid   [data-invalid]      (base-ui Field.Root, Layer 1 feedback-error)
+
+   NAMING  .musy-<component>[__<part>][--<variant>]
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+/* ═══ 0 · SHARED PRIMITIVES ════════════════════════════════════════════════ */
+
+/* Hover is a capability, not a state. Applying :hover on a touch device leaves
+   the hover fill stuck after tap — which on a one-handed mobile app is the most
+   common false affordance there is. Every hover rule in this file is nested in
+   this query. */
+@media (hover: hover) and (pointer: fine) { /* opened per-component below */ }
+
+/* The single focus indicator. Defined once, referenced by every control.
+   2.4.11: --focus-ring-clearance is the padding an overflow:hidden ancestor
+   must carry so the ring is never clipped. */
+.musy-focusable:focus-visible,
+.musy-icon-btn:focus-visible,
+.musy-btn:focus-visible,
+.musy-switch__track:focus-visible,
+.musy-radio__body:focus-visible,
+.musy-field__control:focus-visible,
+.musy-wizard__trigger:focus-visible,
+.musy-radio-card__body:focus-visible,
+.musy-rcard__body:focus-visible,
+.musy-lightbox__close:focus-visible,
+.musy-msg__dismiss:focus-visible,
+.musy-carousel__dot:focus-visible,
+.musy-carousel__slide:focus-visible,
+[data-force~="focus"] {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Screen-reader-only. Used for the loading announcement and for a Switch whose
+   visible label is suppressed by the consuming app. */
+.musy-sr-only {
+  position: absolute;
+  width: var(--border-width-hairline);
+  height: var(--border-width-hairline);
+  padding: 0;
+  margin: calc(var(--border-width-hairline) * -1);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+
+/* ═══ 1 · ICON ═════════════════════════════════════════════════════════════
+   A sized, stroke-correct wrapper around a static Lucide glyph.
+   Colour is inherited (currentColor) so an icon in a button is automatically
+   the button's foreground — one less token binding to get wrong.            */
+
+.musy-icon {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  stroke: currentColor;
+  stroke-width: var(--icon-stroke);
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+
+.musy-icon--sm { width: var(--icon-size-sm); height: var(--icon-size-sm);
+                 /* G1 token gap — PROVISIONAL until Layer 1 absorbs it */
+                 stroke-width: var(--icon-stroke-sm); }
+.musy-icon--md { width: var(--icon-size-md); height: var(--icon-size-md); }
+.musy-icon--lg { width: var(--icon-size-lg); height: var(--icon-size-lg); }
+.musy-icon--xl { width: var(--icon-size-xl); height: var(--icon-size-xl); }
+
+/* Optical centring on cap height when the icon sits beside text. Layer 1
+   defines the nudge; only text-adjacent icons take it. */
+.musy-icon--inline { transform: translateY(var(--icon-optical-nudge)); }
+
+/* Tones. A meaningful icon must take a >=3:1 token (1.4.11); these are the
+   only tones offered, and all of them clear it. */
+.musy-icon--muted   { color: var(--on-surface-muted); }
+.musy-icon--strong  { color: var(--on-surface); }
+.musy-icon--primary { color: var(--interactive-primary-on-subtle); }
+.musy-icon--info    { color: var(--feedback-info-icon); }
+.musy-icon--warning { color: var(--feedback-warning-icon); }
+.musy-icon--success { color: var(--feedback-success-icon); }
+.musy-icon--error   { color: var(--feedback-error-icon); }
+
+/* Animation is opt-in and double-gated: the consuming app sets
+   data-animate="on" from a user setting, and this query removes it again for
+   prefers-reduced-motion. There is no animated default anywhere in the system. */
+.musy-icon[data-animate="on"] {
+  transition: transform var(--motion-emphasis);
+}
+@media (prefers-reduced-motion: reduce) {
+  .musy-icon[data-animate="on"] { transition: none; animation: none !important; }
+}
+
+
+/* ═══ 2 · ICON BUTTON ══════════════════════════════════════════════════════
+   APG button. Square, radius-full, label lives in aria-label and is reused
+   verbatim by the tooltip.                                                  */
+
+.musy-icon-btn {
+  --musy-icon-btn-size: var(--target-primary);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--musy-icon-btn-size);
+  height: var(--musy-icon-btn-size);
+  padding: 0;
+  border: var(--border-width-regular) var(--border-style-solid) transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  font: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle),
+              border-color var(--motion-toggle),
+              color var(--motion-toggle);
+}
+
+.musy-icon-btn--min      { --musy-icon-btn-size: var(--target-min); }
+.musy-icon-btn--primary-size { --musy-icon-btn-size: var(--target-primary); }
+.musy-icon-btn--comfort  { --musy-icon-btn-size: var(--target-comfort); }
+.musy-icon-btn--guided   { --musy-icon-btn-size: var(--target-guided); }
+
+/* --target-min (24px) is below 2.5.8's 24px-with-spacing floor unless it is
+   spaced. It is permitted only inline in prose, and the consuming layout owes
+   it --sp-2 of clear space on every side. */
+.musy-icon-btn--min { margin: var(--sp-2); }
+
+.musy-icon-btn--primary {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on);
+}
+.musy-icon-btn--secondary {
+  background-color: var(--surface-raised);
+  border-color: var(--border-strong);
+  color: var(--on-surface);
+}
+.musy-icon-btn--ghost {
+  background-color: var(--interactive-ghost);
+  border-color: transparent;
+  color: var(--interactive-ghost-on);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .musy-icon-btn--primary:hover:not(:disabled):not([data-loading]),
+  .musy-icon-btn--primary[data-force~="hover"] {
+    background-color: var(--interactive-primary-hover);
+  }
+  .musy-icon-btn--secondary:hover:not(:disabled):not([data-loading]),
+  .musy-icon-btn--secondary[data-force~="hover"] {
+    background-color: var(--interactive-ghost-hover);
+    border-color: var(--sand-8);
+  }
+  .musy-icon-btn--ghost:hover:not(:disabled):not([data-loading]),
+  .musy-icon-btn--ghost[data-force~="hover"] {
+    background-color: var(--interactive-ghost-hover);
+  }
+}
+
+.musy-icon-btn--primary:active:not(:disabled),
+.musy-icon-btn--primary[data-pressed]:not(:disabled),
+.musy-icon-btn--primary[data-force~="active"] {
+  background-color: var(--interactive-primary-active);
+}
+.musy-icon-btn--secondary:active:not(:disabled),
+.musy-icon-btn--secondary[data-pressed]:not(:disabled),
+.musy-icon-btn--ghost:active:not(:disabled),
+.musy-icon-btn--ghost[data-pressed]:not(:disabled),
+.musy-icon-btn--secondary[data-force~="active"],
+.musy-icon-btn--ghost[data-force~="active"] {
+  background-color: var(--interactive-ghost-active);
+}
+
+.musy-icon-btn:disabled,
+.musy-icon-btn[data-disabled] {
+  cursor: not-allowed;
+}
+.musy-icon-btn--primary:disabled,
+.musy-icon-btn--primary[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: transparent;
+  color: var(--interactive-primary-on-disabled);
+}
+.musy-icon-btn--secondary:disabled,
+.musy-icon-btn--secondary[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: transparent;
+  color: var(--on-surface-disabled);
+}
+.musy-icon-btn--ghost:disabled,
+.musy-icon-btn--ghost[data-disabled] {
+  background-color: var(--interactive-ghost-disabled);
+  color: var(--interactive-ghost-on-disabled);
+}
+
+/* Loading. The glyph is replaced by a spinner, the button keeps its footprint
+   so the layout does not jump, and the state is announced in a live region by
+   the component (colour and motion alone would not announce it). */
+.musy-icon-btn[data-loading] { cursor: progress; }
+.musy-icon-btn[data-loading] .musy-icon { visibility: hidden; }
+
+.musy-spinner {
+  position: absolute;
+  width: var(--icon-size-md);
+  height: var(--icon-size-md);
+  border: var(--border-width-thick) var(--border-style-solid) currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: musy-spin var(--motion-duration-slower) linear infinite;
+}
+@keyframes musy-spin { to { transform: rotate(360deg); } }
+/* The spinner slot is always rendered so the loading swap cannot reflow the
+   button; it is revealed by the loading state alone. */
+.musy-icon-btn:not([data-loading]) .musy-spinner,
+.musy-btn:not([data-loading]) .musy-spinner { display: none; }
+/* Reduced motion: Layer 1 collapses the duration to 1ms, which would spin the
+   ring at 1000rps. A spinner is the one place where collapsing duration is the
+   wrong answer, so the animation is dropped entirely and the ring holds still —
+   the live-region text is what communicates the state. */
+@media (prefers-reduced-motion: reduce) {
+  .musy-spinner { animation: none; border-top-color: currentColor; opacity: 0.55; }
+}
+
+/* Tooltip — desktop only, on hover AND focus (1.4.13: hover-only fails).
+   Text comes from the button's own aria-label, so the string is authored once. */
+.musy-icon-btn__tooltip {
+  /* base-ui Tooltip.Popup — positioning, collision detection and the portal are
+     the primitive's job, so this rule is purely appearance. Layer 1's --z-* was
+     built for exactly this portal-based layering. */
+  z-index: var(--z-tooltip);
+  padding: var(--sp-1) var(--sp-2);
+  border-radius: var(--radius-xs);
+  background-color: var(--surface-inverse);
+  color: var(--on-surface-inverse);
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  line-height: var(--type-label-md-line);
+  letter-spacing: var(--type-label-md-tracking);
+  white-space: nowrap;
+  pointer-events: none;
+  transition: opacity var(--motion-toggle);
+}
+/* base-ui drives the enter/exit through these two attributes. */
+.musy-icon-btn__tooltip[data-starting-style],
+.musy-icon-btn__tooltip[data-ending-style] { opacity: 0; }
+/* Coarse pointers get no tooltip at all — the label is already the accessible
+   name, and a touch-triggered tooltip would sit under the finger. */
+@media (hover: none), (pointer: coarse) {
+  .musy-icon-btn__tooltip { display: none; }
+}
+/* Which pointer types open it, and the hover+focus requirement (1.4.13), are
+   configured on Tooltip.Root in IconButton.tsx — not here. */
+
+
+/* ═══ 4 · CTA BUTTON ═══════════════════════════════════════════════════════
+   APG button. Pill geometry from the Figma button; padding and height from
+   Layer 1 (the Figma 10/20 padding yielded a 37px control, below 2.5.8).    */
+
+.musy-btn {
+  --musy-btn-target: var(--target-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-gap-inline);
+  min-height: var(--musy-btn-target);
+  padding: var(--space-inset-control);
+  border: var(--border-width-regular) var(--border-style-solid) transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  font-family: var(--type-label-lg-family);
+  font-size: var(--type-label-lg-size);
+  font-weight: var(--type-label-lg-weight);
+  line-height: var(--type-label-lg-line);
+  letter-spacing: var(--type-label-lg-tracking);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle),
+              border-color var(--motion-toggle),
+              color var(--motion-toggle);
+}
+
+/* --target-guided is the assisted-use variant (Decision 4). It raises the
+   target, not the type — the label step is a separate prop. */
+.musy-btn--guided { --musy-btn-target: var(--target-guided); padding-inline: var(--sp-6); }
+.musy-btn--comfort { --musy-btn-target: var(--target-comfort); }
+
+/* Full-width on mobile is a layout decision the consumer makes, not a variant
+   the button assumes. */
+.musy-btn--block { display: flex; width: 100%; }
+
+.musy-btn--primary {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on);
+}
+.musy-btn--secondary {
+  background-color: var(--surface-raised);
+  border-color: var(--border-strong);
+  color: var(--on-surface);
+}
+.musy-btn--ghost {
+  background-color: var(--interactive-ghost);
+  border-color: transparent;
+  color: var(--interactive-ghost-on);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .musy-btn--primary:hover:not(:disabled):not([data-loading]),
+  .musy-btn--primary[data-force~="hover"] {
+    background-color: var(--interactive-primary-hover);
+  }
+  .musy-btn--secondary:hover:not(:disabled):not([data-loading]),
+  .musy-btn--secondary[data-force~="hover"] {
+    background-color: var(--interactive-ghost-hover);
+    border-color: var(--sand-8);
+  }
+  .musy-btn--ghost:hover:not(:disabled):not([data-loading]),
+  .musy-btn--ghost[data-force~="hover"] {
+    background-color: var(--interactive-ghost-hover);
+  }
+}
+
+.musy-btn--primary:active:not(:disabled),
+.musy-btn--primary[data-pressed]:not(:disabled),
+.musy-btn--primary[data-force~="active"] {
+  background-color: var(--interactive-primary-active);
+}
+.musy-btn--secondary:active:not(:disabled),
+.musy-btn--secondary[data-pressed]:not(:disabled),
+.musy-btn--ghost:active:not(:disabled),
+.musy-btn--ghost[data-pressed]:not(:disabled),
+.musy-btn--secondary[data-force~="active"],
+.musy-btn--ghost[data-force~="active"] {
+  background-color: var(--interactive-ghost-active);
+}
+
+/* ── accent-styled solids ────────────────────────────────────────────────────
+   Literal placeholder names (Decision 3). Same six states as primary, from the
+   accent families' own solved tokens — note -on differs per family: ocher and
+   purple are light solids, so their foreground is theme-conditional where
+   terracotta's is not. That is exactly why these are separate variants and not
+   a hue swap on primary. */
+.musy-btn--accent-placeholder1 {
+  background-color: var(--interactive-accent-placeholder1);
+  border-color: var(--interactive-accent-placeholder1-border);
+  color: var(--interactive-accent-placeholder1-on);
+}
+.musy-btn--accent-placeholder2 {
+  background-color: var(--interactive-accent-placeholder2);
+  border-color: var(--interactive-accent-placeholder2-border);
+  color: var(--interactive-accent-placeholder2-on);
+}
+@media (hover: hover) and (pointer: fine) {
+  .musy-btn--accent-placeholder1:hover:not(:disabled):not([data-loading]),
+  .musy-btn--accent-placeholder1[data-force~="hover"] {
+    background-color: var(--interactive-accent-placeholder1-hover);
+  }
+  .musy-btn--accent-placeholder2:hover:not(:disabled):not([data-loading]),
+  .musy-btn--accent-placeholder2[data-force~="hover"] {
+    background-color: var(--interactive-accent-placeholder2-hover);
+  }
+}
+.musy-btn--accent-placeholder1:active:not(:disabled),
+.musy-btn--accent-placeholder1[data-pressed]:not(:disabled),
+.musy-btn--accent-placeholder1[data-force~="active"] {
+  background-color: var(--interactive-accent-placeholder1-active);
+}
+.musy-btn--accent-placeholder2:active:not(:disabled),
+.musy-btn--accent-placeholder2[data-pressed]:not(:disabled),
+.musy-btn--accent-placeholder2[data-force~="active"] {
+  background-color: var(--interactive-accent-placeholder2-active);
+}
+.musy-btn--accent-placeholder1:disabled, .musy-btn--accent-placeholder1[data-disabled] {
+  background-color: var(--interactive-accent-placeholder1-disabled);
+  border-color: transparent;
+  color: var(--interactive-accent-placeholder1-on-disabled);
+}
+.musy-btn--accent-placeholder2:disabled, .musy-btn--accent-placeholder2[data-disabled] {
+  background-color: var(--interactive-accent-placeholder2-disabled);
+  border-color: transparent;
+  color: var(--interactive-accent-placeholder2-on-disabled);
+}
+
+.musy-btn:disabled, .musy-btn[data-disabled] { cursor: not-allowed; }
+.musy-btn--primary:disabled, .musy-btn--primary[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: transparent;
+  color: var(--interactive-primary-on-disabled);
+}
+.musy-btn--secondary:disabled, .musy-btn--secondary[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: transparent;
+  color: var(--on-surface-disabled);
+}
+.musy-btn--ghost:disabled, .musy-btn--ghost[data-disabled] {
+  background-color: var(--interactive-ghost-disabled);
+  color: var(--interactive-ghost-on-disabled);
+}
+
+.musy-btn[data-loading] { cursor: progress; position: relative; }
+.musy-btn[data-loading] .musy-btn__label,
+.musy-btn[data-loading] .musy-icon { visibility: hidden; }
+.musy-btn[data-loading] .musy-spinner {
+  left: 50%; top: 50%; margin-left: calc(var(--icon-size-md) / -2);
+  margin-top: calc(var(--icon-size-md) / -2);
+}
+
+/* A button label is a label step, so it does not wrap by default; German
+   compounds get an explicit two-line escape instead of silent truncation. */
+.musy-btn__label { text-wrap: var(--text-wrap-body); }
+.musy-btn--wrap { min-height: var(--musy-btn-target); height: auto; }
+.musy-btn--wrap .musy-btn__label { white-space: normal; }
+
+
+/* ═══ 5 · SWITCH ═══════════════════════════════════════════════════════════
+   base-ui Switch (`@base-ui/react/switch`). Switch.Root is the TRACK and is
+   the focusable element; Switch.Thumb is the knob. base-ui renders the hidden
+   <input> itself, so there is no input rule here and no sibling selector.
+   Track geometry is derived from --icon-size-lg and --sp-1 — no invented px.  */
+
+.musy-switch {
+  --musy-switch-knob: var(--icon-size-lg);                              /* 24px */
+  --musy-switch-pad: var(--sp-1);                                       /*  4px */
+  --musy-switch-h: calc(var(--musy-switch-knob) + var(--musy-switch-pad) * 2);
+  --musy-switch-w: calc(var(--musy-switch-knob) * 2 + var(--musy-switch-pad) * 3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-gap-related);
+  min-height: var(--target-primary);   /* the ROW is the 44px target, not the track */
+  cursor: pointer;
+}
+.musy-switch--guided { min-height: var(--target-guided); }
+.musy-switch--reverse { flex-direction: row-reverse; justify-content: space-between; }
+
+/* Switch.Root */
+.musy-switch__track {
+  position: relative;
+  flex-shrink: 0;
+  display: block;
+  box-sizing: border-box;
+  width: var(--musy-switch-w);
+  height: var(--musy-switch-h);
+  padding: 0;
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-full);
+  background-color: var(--surface-sunken);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle),
+              border-color var(--motion-toggle);
+}
+
+/* Switch.Thumb */
+.musy-switch__knob {
+  position: absolute;
+  top: 0; left: 0;
+  display: grid;
+  place-items: center;
+  width: var(--musy-switch-knob);
+  height: var(--musy-switch-knob);
+  margin: calc(var(--musy-switch-pad) - var(--border-width-regular));
+  border-radius: var(--radius-full);
+  background-color: var(--surface-raised);
+  box-shadow: var(--elevation-1);
+  color: var(--on-surface-muted);
+  transition: transform var(--motion-toggle),
+              background-color var(--motion-toggle),
+              color var(--motion-toggle);
+}
+
+/* ON. Fill + knob travel + glyph swap: three cues, so the state never rests on
+   colour alone (1.4.1). */
+.musy-switch__track[data-checked] {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-border);
+}
+.musy-switch__track[data-checked] .musy-switch__knob {
+  transform: translateX(calc(var(--musy-switch-knob) + var(--musy-switch-pad)));
+  color: var(--interactive-primary-on-subtle);
+}
+
+/* Accent-styled switches (Decision 3 — literal placeholder names). */
+.musy-switch--accent-placeholder1 .musy-switch__track[data-checked] {
+  background-color: var(--interactive-accent-placeholder1);
+  border-color: var(--interactive-accent-placeholder1-border);
+}
+.musy-switch--accent-placeholder1 .musy-switch__track[data-checked] .musy-switch__knob {
+  color: var(--interactive-accent-placeholder1-on-subtle);
+}
+.musy-switch--accent-placeholder2 .musy-switch__track[data-checked] {
+  background-color: var(--interactive-accent-placeholder2);
+  border-color: var(--interactive-accent-placeholder2-border);
+}
+.musy-switch--accent-placeholder2 .musy-switch__track[data-checked] .musy-switch__knob {
+  color: var(--interactive-accent-placeholder2-on-subtle);
+}
+
+/* The embedded check / x. Both live in the knob; only one is visible.
+   Sized against the KNOB, not the label: Layer 1's label-lg → icon-md pairing
+   would overflow a 24px knob, so the pairing is knob-relative here. */
+.musy-switch__glyph { grid-area: 1 / 1; transition: opacity var(--motion-toggle); }
+.musy-switch__glyph[data-state="hidden"] { opacity: 0; }
+
+@media (hover: hover) and (pointer: fine) {
+  .musy-switch__track[data-unchecked]:hover:not([data-disabled]),
+  .musy-switch__track[data-force~="hover"][data-unchecked] {
+    background-color: var(--interactive-ghost-hover);
+  }
+  .musy-switch__track[data-checked]:hover:not([data-disabled]),
+  .musy-switch__track[data-force~="hover"][data-checked] {
+    background-color: var(--interactive-primary-hover);
+  }
+}
+.musy-switch__track[data-unchecked]:active:not([data-disabled]),
+.musy-switch__track[data-force~="active"][data-unchecked] {
+  background-color: var(--interactive-ghost-active);
+}
+.musy-switch__track[data-checked]:active:not([data-disabled]),
+.musy-switch__track[data-force~="active"][data-checked] {
+  background-color: var(--interactive-primary-active);
+}
+
+.musy-switch__track[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+}
+.musy-switch__track[data-disabled] .musy-switch__knob {
+  box-shadow: none;
+  color: var(--on-surface-disabled);
+}
+.musy-switch:has(.musy-switch__track[data-disabled]) { cursor: not-allowed; }
+.musy-switch:has(.musy-switch__track[data-disabled]) .musy-switch__label { color: var(--on-surface-disabled); }
+
+.musy-switch__label {
+  font-family: var(--type-label-lg-family);
+  font-size: var(--type-label-lg-size);
+  font-weight: var(--type-label-lg-weight);
+  line-height: var(--type-label-lg-line);
+  letter-spacing: var(--type-label-lg-tracking);
+  color: var(--on-surface);
+  text-wrap: var(--text-wrap-body);
+  cursor: pointer;
+}
+
+
+/* ═══ 6 · RADIO GROUP — TEXT ONLY ══════════════════════════════════════════
+   base-ui RadioGroup + Radio (`@base-ui/react/radio-group`, `/radio`), with
+   base-ui Fieldset supplying the group name. Radio.Root IS the row
+   (.musy-radio__body) — it is the focusable element and it carries
+   [data-checked] / [data-disabled], so no hidden-input sibling selector is
+   needed. Roving arrow-key focus comes from RadioGroup.
+
+   Selection is carried by THREE cues: tinted fill, a step from
+   --border-width-regular to --border-width-thick, and a check glyph. Strip the
+   hue and the state is still readable (1.4.1), which is what makes
+   prefers-contrast: more work with no special case.                          */
+
+.musy-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-stack);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;   /* fieldset defaults to min-content — this releases it */
+}
+.musy-radio-group__legend {
+  padding: 0;
+  margin-block-end: var(--space-gap-related);
+  font-family: var(--type-heading-sm-family);
+  font-size: var(--type-heading-sm-size);
+  font-weight: var(--type-heading-sm-weight);
+  line-height: var(--type-heading-sm-line);
+  letter-spacing: var(--type-heading-sm-tracking);
+  color: var(--on-surface);
+  text-wrap: var(--text-wrap-heading);
+  max-width: var(--measure-heading);
+}
+.musy-radio-group__hint {
+  margin-block-end: var(--space-gap-stack);
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  font-weight: var(--type-body-md-weight);
+  line-height: var(--type-body-md-line);
+  color: var(--on-surface-muted);
+  text-wrap: var(--text-wrap-body);
+  max-width: var(--measure-body);
+}
+
+/* Radio.Root */
+.musy-radio__body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-gap-related);
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--target-comfort);
+  padding: var(--space-inset-control);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+  cursor: pointer;
+  text-align: start;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle),
+              border-color var(--motion-toggle);
+}
+.musy-radio-group--guided .musy-radio__body { min-height: var(--target-guided); }
+
+/* The marker. Circle at rest; fills and reveals its check when selected. */
+.musy-radio__marker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-full);
+  color: transparent;
+  transition: background-color var(--motion-toggle),
+              border-color var(--motion-toggle),
+              color var(--motion-toggle);
+}
+.musy-radio__label {
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  font-weight: var(--type-body-md-weight);
+  line-height: var(--type-body-md-line);
+  color: var(--on-surface);
+  /* max 2 lines. NOT a clip: the component measures overflow and, when the
+     string would be cut, renders it unclamped instead of hiding meaning.
+     See docs/07-components.md §7.6 A11y and open question 15. */
+  text-wrap: var(--text-wrap-body);
+  hyphens: var(--text-hyphens);
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+.musy-radio--no-clamp .musy-radio__label,
+.musy-radio__body--no-clamp .musy-radio__label {
+  display: block;
+  -webkit-line-clamp: none;
+  overflow: visible;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .musy-radio__body[data-unchecked]:hover:not([data-disabled]),
+  .musy-radio__body[data-force~="hover"] {
+    background-color: var(--interactive-ghost-hover);
+  }
+}
+.musy-radio__body[data-unchecked]:active:not([data-disabled]),
+.musy-radio__body[data-force~="active"] {
+  background-color: var(--interactive-ghost-active);
+}
+
+/* SELECTED — primary */
+.musy-radio__body[data-checked] {
+  background-color: var(--interactive-primary-subtle);
+  border-color: var(--interactive-primary-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio__body[data-checked] .musy-radio__marker {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-border);
+  border-width: var(--border-width-thick);
+  color: var(--interactive-primary-on);
+}
+.musy-radio__body[data-checked] .musy-radio__label { color: var(--interactive-primary-on-subtle); }
+
+/* SELECTED — accent placeholder 1 */
+.musy-radio-group--accent-placeholder1 .musy-radio__body[data-checked] {
+  background-color: var(--interactive-accent-placeholder1-subtle);
+  border-color: var(--interactive-accent-placeholder1-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-group--accent-placeholder1 .musy-radio__body[data-checked] .musy-radio__marker {
+  background-color: var(--interactive-accent-placeholder1);
+  border-color: var(--interactive-accent-placeholder1-border);
+  border-width: var(--border-width-thick);
+  color: var(--interactive-accent-placeholder1-on);
+}
+.musy-radio-group--accent-placeholder1 .musy-radio__body[data-checked] .musy-radio__label {
+  color: var(--interactive-accent-placeholder1-on-subtle);
+}
+
+/* SELECTED — accent placeholder 2 */
+.musy-radio-group--accent-placeholder2 .musy-radio__body[data-checked] {
+  background-color: var(--interactive-accent-placeholder2-subtle);
+  border-color: var(--interactive-accent-placeholder2-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-group--accent-placeholder2 .musy-radio__body[data-checked] .musy-radio__marker {
+  background-color: var(--interactive-accent-placeholder2);
+  border-color: var(--interactive-accent-placeholder2-border);
+  border-width: var(--border-width-thick);
+  color: var(--interactive-accent-placeholder2-on);
+}
+.musy-radio-group--accent-placeholder2 .musy-radio__body[data-checked] .musy-radio__label {
+  color: var(--interactive-accent-placeholder2-on-subtle);
+}
+
+/* DISABLED */
+.musy-radio__body[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: var(--border-subtle);
+  border-width: var(--border-width-regular);
+  cursor: not-allowed;
+}
+.musy-radio__body[data-disabled] .musy-radio__label { color: var(--on-surface-disabled); }
+.musy-radio__body[data-disabled] .musy-radio__marker { border-color: var(--on-surface-disabled); }
+
+/* INVALID — from base-ui Field.Root, or set on the group. Colour + border +
+   the Message the group renders below. */
+.musy-radio-group[data-invalid] .musy-radio__body,
+.musy-radio__body[data-invalid] {
+  border-color: var(--feedback-error-border);
+}
+.musy-radio-group__error { margin-block-start: var(--space-gap-related); }
+
+
+/* ═══ 7 · RADIO GROUP — IMAGE + TEXT ═══════════════════════════════════════
+   Same base-ui primitives and the same selection semantics as §6; different
+   container, grid, and truncation behaviour — which is why it is a separate
+   component, not an image prop. Column counts bind to Layer 1's breakpoint
+   table, not to guessed widths.
+
+   CARD FLOOR — 196px. Below that the media crops to a thumbnail and the label
+   starts hyphenating, so the column count yields before the card does.
+
+   The column table is expressed as a CAP plus a FLOOR rather than as viewport
+   steps, because this component is mounted inside narrow containers — the
+   proof's theme panels, §19's viewport frames, the MVP's sidebar column — and a
+   viewport-keyed media query cannot see them: a 3-column rule fired inside a
+   381px panel and three 196px tracks overflowed it by 255px. auto-fit reads the
+   container, so the count now falls out of the space actually available.
+     · max(floor, (100% - 3 gaps) / 4)  caps the grid at four columns
+     · min(100%, …)                     stops the floor forcing a scrollbar in a
+                                        container narrower than one card
+   Shared with §13 — see --musy-card-min.                                     */
+
+.musy-radio-card-group {
+  display: grid;
+  /* 4-col system, container-driven */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(var(--musy-card-min), calc((100% - 3 * var(--grid-gap)) / 4))), 1fr));
+  gap: var(--grid-gap);
+  border: 0; padding: 0; margin: 0;
+  min-inline-size: 0;
+}
+
+/* Radio.Root */
+.musy-radio-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-inline);
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0 0 var(--sp-2);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle), border-color var(--motion-toggle);
+}
+/* 2.4.11: overflow:hidden above would clip the focus ring, so the ring is on
+   the body and the clearance is paid by the group's grid gap
+   (--grid-gap >= --focus-ring-clearance at every breakpoint). */
+
+.musy-radio-card__media {
+  position: relative;
+  aspect-ratio: 1 / 1;              /* from the Figma card: 152 wide × 150 media */
+  background-color: var(--surface-sunken);
+  background-size: cover;
+  background-position: center;
+}
+.musy-radio-card__media img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover;
+}
+/* The selected check floats over the media so it is visible without shifting
+   the label — the non-colour cue for a card whose text is short. */
+.musy-radio-card__check {
+  position: absolute;
+  inset-block-start: var(--sp-2);
+  inset-inline-end: var(--sp-2);
+  display: grid; place-items: center;
+  box-sizing: border-box;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border: var(--border-width-thick) var(--border-style-solid) transparent;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: transparent;
+  transition: background-color var(--motion-toggle), color var(--motion-toggle),
+              border-color var(--motion-toggle);
+}
+.musy-radio-card__label {
+  padding-inline: var(--sp-2);
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  font-weight: var(--type-body-md-weight);
+  line-height: var(--type-body-md-line);
+  color: var(--on-surface);
+  text-align: center;
+  /* Card labels are NEVER clamped — a 2-col mobile grid at 393px is exactly
+     where a German compound needs three lines, and the card can grow.
+     overflow-wrap is the safety net BELOW hyphenation: "Partnerschaft" in a
+     109px column has no legal hyphenation point close enough to the start, and
+     the body carries overflow:hidden for the media's rounded corners — so
+     without this the word is cut mid-glyph instead of wrapped. hyphens:auto
+     also needs a lang attribute on an ancestor to do anything at all. */
+  text-wrap: var(--text-wrap-body);
+  hyphens: var(--text-hyphens);
+  overflow-wrap: break-word;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .musy-radio-card__body[data-unchecked]:hover:not([data-disabled]),
+  .musy-radio-card__body[data-force~="hover"] {
+    background-color: var(--interactive-ghost-hover);
+  }
+}
+.musy-radio-card__body[data-unchecked]:active:not([data-disabled]),
+.musy-radio-card__body[data-force~="active"] {
+  background-color: var(--interactive-ghost-active);
+}
+
+.musy-radio-card__body[data-checked] {
+  background-color: var(--interactive-primary-subtle);
+  border-color: var(--interactive-primary-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-card__body[data-checked] .musy-radio-card__check {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-on);
+  color: var(--interactive-primary-on);
+}
+.musy-radio-card__body[data-checked] .musy-radio-card__label {
+  color: var(--interactive-primary-on-subtle);
+}
+
+.musy-radio-card-group--accent-placeholder1 .musy-radio-card__body[data-checked] {
+  background-color: var(--interactive-accent-placeholder1-subtle);
+  border-color: var(--interactive-accent-placeholder1-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-card-group--accent-placeholder1 .musy-radio-card__body[data-checked] .musy-radio-card__check {
+  background-color: var(--interactive-accent-placeholder1);
+  border-color: var(--interactive-accent-placeholder1-on);
+  color: var(--interactive-accent-placeholder1-on);
+}
+.musy-radio-card-group--accent-placeholder2 .musy-radio-card__body[data-checked] {
+  background-color: var(--interactive-accent-placeholder2-subtle);
+  border-color: var(--interactive-accent-placeholder2-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-card-group--accent-placeholder1 .musy-radio-card__body[data-checked] .musy-radio-card__label {
+  color: var(--interactive-accent-placeholder1-on-subtle);
+}
+.musy-radio-card-group--accent-placeholder2 .musy-radio-card__body[data-checked] .musy-radio-card__label {
+  color: var(--interactive-accent-placeholder2-on-subtle);
+}
+.musy-radio-card-group--accent-placeholder2 .musy-radio-card__body[data-checked] .musy-radio-card__check {
+  background-color: var(--interactive-accent-placeholder2);
+  border-color: var(--interactive-accent-placeholder2-on);
+  color: var(--interactive-accent-placeholder2-on);
+}
+
+.musy-radio-card__body[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+}
+.musy-radio-card__body[data-disabled] .musy-radio-card__label { color: var(--on-surface-disabled); }
+.musy-radio-card__body[data-disabled] .musy-radio-card__media { opacity: 0.5; }
+
+/* Empty state — the group has no options to offer. */
+.musy-radio-card-group__empty {
+  grid-column: 1 / -1;
+}
+
+
+/* ═══ 8 · CAROUSEL ═════════════════════════════════════════════════════════
+   Replaces Process Visualisation (v0.1) as the way a sequence is shown: one
+   step at a time, neighbours peeking, so a five-step onboarding costs one
+   screen instead of a scroll.
+
+   APG: Carousel (basic, no auto-rotation — so no rotation control is owed).
+   Semantic HTML: <ol>, because the order is still the content; the scroll
+   container is the <ol> itself and each <li> is a slide labelled "n of m".
+
+   Mechanics are native: scroll-snap + overflow, so touch drag and trackpad
+   swipe work with no script. The consuming app only owns the selected index
+   (for the dots and the scale) and calls scrollTo() on the viewport.
+
+   Geometry is container-relative (cqi), not viewport-relative: the carousel
+   sits inside a Content Box on the onboarding screen, and a slide must be 66%
+   of THAT, not of the window. Percentages can't be used here — a percentage
+   basis inside a padded track resolves against the padded box and compounds.
+
+   2.5.8: dots are 12px visually but carry a --target-min (24px) hit area.
+   2.3.3 / 2.3.1: the only motion is the scale and the snap scroll, both on
+   --motion-toggle, and Layer 1 collapses every duration under
+   prefers-reduced-motion.                                                  */
+
+.musy-carousel {
+  /* One slide's share of the carousel's own inline size. */
+  --musy-carousel-slide: 66cqi;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+/* Narrow container: a 66% slide leaves too little for the headline once the
+   German string is 30% longer, so the slide takes more of the width and the
+   peek shrinks to a hint. */
+@container (max-width: 420px) {
+  .musy-carousel__viewport { --musy-carousel-slide: 82cqi; }
+}
+
+.musy-carousel__viewport {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-5);
+  /* Centres the first and last slide too — without the end padding they can
+     only ever snap to an edge. */
+  padding-inline: calc(50cqi - var(--musy-carousel-slide) / 2);
+  /* 2.4.11 — the ring on a focused slide must not be clipped by the scroller. */
+  padding-block: var(--focus-ring-clearance);
+  margin: 0;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  /* No scroll-behavior: smooth. Programmatic slide changes land instantly and
+     the card scale carries the transition — a smooth scroll animation is
+     silently dropped wherever reduced motion is in force, which would leave
+     dots and viewport disagreeing. */
+  scrollbar-width: none;
+}
+.musy-carousel__viewport::-webkit-scrollbar { display: none; }
+
+.musy-carousel__slide {
+  flex: 0 0 var(--musy-carousel-slide);
+  min-inline-size: 0;
+  display: flex;
+  scroll-snap-align: center;
+}
+
+.musy-carousel__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-gap-stack);
+  inline-size: 100%;
+  padding: var(--sp-5);
+  text-align: center;
+  background-color: var(--surface-raised);
+  border: var(--border-width-hairline) var(--border-style-solid) var(--border-subtle);
+  border-radius: var(--radius-card);
+  /* Off-centre slides sit back. Scale only — no opacity fade: dimmed text
+     would drop below 4.5:1 (1.4.3) while still being read.
+     Not transitioned: the scale and border ARE the selected state, and a
+     transitioned property renders its start value until the clock advances —
+     under forced reduced motion, or in any paused/throttled frame, that
+     leaves the centred card looking unselected. The snap scroll is the
+     movement; this is just state. */
+  transform: scale(0.9);
+}
+.musy-carousel__slide[data-current="true"] .musy-carousel__card {
+  transform: scale(1);
+  border-color: var(--musy-rest-border);
+}
+
+/* A peeking neighbour is a shortcut to itself — tapping the visible frame is
+   the gesture people try first. Pointer only on the off-centre cards: the
+   centred one has nowhere to go, and a pointer there is a false affordance.
+   Not a <button>: the dots are the accessible, focusable control for the same
+   action, so this stays a redundant pointer shortcut rather than a second tab
+   stop announcing the same four destinations. */
+@media (hover: hover) and (pointer: fine) {
+  .musy-carousel__slide:not([data-current="true"]) .musy-carousel__card { cursor: pointer; }
+}
+
+/* The XXL icon. Layer 1 stops at --icon-size-xl (32px), so the optical weight
+   comes from the badge around it, not from a larger glyph.
+   [OPEN · G3] If onboarding wants a genuinely XXL glyph, Layer 1 needs
+   --icon-size-xxl (48px). Not invented here. */
+.musy-carousel__badge {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  inline-size: var(--target-guided);
+  block-size: var(--target-guided);
+  border: var(--border-width-regular) var(--border-style-solid) var(--musy-rest-border);
+  border-radius: var(--radius-full);
+  background-color: var(--musy-rest-fill);
+  color: var(--musy-rest-on);
+}
+
+.musy-carousel__title {
+  margin: 0;
+  font-family: var(--type-heading-sm-family);
+  font-size: var(--type-heading-sm-size);
+  font-weight: var(--type-heading-sm-weight);
+  line-height: var(--type-heading-sm-line);
+  letter-spacing: var(--type-heading-sm-tracking);
+  color: var(--on-surface);
+  text-wrap: var(--text-wrap-heading);
+  max-width: var(--measure-heading);
+  hyphens: var(--text-hyphens);
+}
+
+/* Controls: prev at the start, next at the end, dots between. Same row as the
+   reference pattern, so the thumb never leaves the bottom of the card. */
+.musy-carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+.musy-carousel__dots {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+}
+
+/* 2.5.8: the mark is 12px, the button is 24px. */
+.musy-carousel__dot {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: var(--target-min);
+  min-block-size: var(--target-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+.musy-carousel__dot-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  block-size: var(--sp-3);
+  min-inline-size: var(--sp-3);
+  border-radius: var(--radius-full);
+  background-color: var(--border-strong);
+  overflow: hidden;
+}
+.musy-carousel__dot[aria-current="true"] .musy-carousel__dot-mark {
+  block-size: var(--target-min);
+  padding-inline: var(--sp-3);
+  background-color: var(--musy-sel-fill);
+  color: var(--musy-sel-on);
+}
+/* The label rides inside the active pill. Capped at --measure-heading so a
+   long German ordinal cannot push the dots row into a second line. */
+.musy-carousel__dot-label {
+  max-inline-size: 0;
+  opacity: 0;
+  white-space: nowrap;
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  line-height: var(--type-label-md-line);
+  letter-spacing: var(--type-label-md-tracking);
+}
+.musy-carousel__dot[aria-current="true"] .musy-carousel__dot-label {
+  max-inline-size: var(--measure-heading);
+  opacity: 1;
+}
+@media (hover: hover) and (pointer: fine) {
+  .musy-carousel__dot:hover:not([aria-current="true"]) .musy-carousel__dot-mark {
+    background-color: var(--on-surface-muted);
+  }
+}
+
+
+/* ═══ 8b · PROCESS VISUALISATION — RETIRED ═════════════════════════════════
+   Superseded by 8 · Carousel. Kept only so the v0.1 clickdummy still renders;
+   no new screen should reach for it.                                        */
+
+.musy-process {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: musy-step;
+}
+.musy-process__step {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-gap-stack);
+  counter-increment: musy-step;
+}
+.musy-process__badge {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: var(--target-primary);
+  height: var(--target-primary);
+  border: var(--border-width-regular) var(--border-style-solid) var(--interactive-primary-border);
+  border-radius: var(--radius-full);
+  background-color: var(--interactive-primary-subtle);
+  color: var(--interactive-primary-on-subtle);
+}
+.musy-process__text { display: flex; flex-direction: column; gap: var(--sp-1); padding-block-start: var(--sp-1); }
+.musy-process__ordinal {
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  line-height: var(--type-label-md-line);
+  letter-spacing: var(--type-label-md-tracking);
+  color: var(--on-surface-muted);
+}
+.musy-process__title {
+  margin: 0;
+  font-family: var(--type-heading-sm-family);
+  font-size: var(--type-heading-sm-size);
+  font-weight: var(--type-heading-sm-weight);
+  line-height: var(--type-heading-sm-line);
+  letter-spacing: var(--type-heading-sm-tracking);
+  color: var(--on-surface);
+  text-wrap: var(--text-wrap-heading);
+  max-width: var(--measure-heading);
+}
+.musy-process__body {
+  margin: 0;
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  font-weight: var(--type-body-md-weight);
+  line-height: var(--type-body-md-line);
+  color: var(--on-surface-muted);
+  text-wrap: var(--text-wrap-body);
+  max-width: var(--measure-body);
+  hyphens: var(--text-hyphens);
+}
+/* The divider: a vertical run with an arrowhead. Centred on the STACK, not on
+   the badge column — it belongs to the whole step sequence rather than to the
+   badge rail, and centring it keeps the rhythm symmetrical however wide the
+   text column gets. Decorative — the <ol> carries the sequence. */
+.musy-process__divider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  /* Symmetrical: --space-gap-stack above and below. The arrow belongs to the
+     sequence, not to either neighbouring step, so it sits evenly between them.
+     The line itself carries the visual pull toward the next step. */
+  padding-block: var(--space-gap-stack);
+  color: var(--border-strong);
+}
+.musy-process__divider-line {
+  width: var(--border-width-thick);
+  height: var(--sp-5);
+  background-color: currentColor;
+}
+
+
+/* ═══ 9 · CONTENT BOX ══════════════════════════════════════════════════════
+   No APG pattern (not interactive, not a landmark). Semantic HTML: <article>
+   with a heading, so it appears in the document outline as a unit.
+   Heading and body type steps are PROPS, applied as data attributes below —
+   the box does not hardcode a pair.                                         */
+
+.musy-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-related);
+  padding: var(--space-inset-card);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-subtle);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+}
+/* The dashed treatment, from the Figma screen container. G2 token gap —
+   PROVISIONAL until Layer 1 absorbs --border-style-dashed.
+   The dash GAP is not independently settable in CSS: every engine derives dash
+   and gap from the border width, so the airier dash the review asked for comes
+   from stepping this edge to --border-width-thick. A real dash-length /
+   dash-gap pair would be a Layer 1 addition (G2b), not a local invention. */
+.musy-box--dashed {
+  border-style: var(--border-style-dashed);
+  border-width: var(--border-width-thick);
+  border-color: var(--border-subtle);
+}
+.musy-box--sunken { background-color: var(--surface-sunken); }
+.musy-box--plain  { border-color: transparent; background-color: transparent; padding: 0; }
+
+.musy-box__headline { margin: 0; color: var(--on-surface); text-wrap: var(--text-wrap-heading); max-width: var(--measure-heading); }
+.musy-box__text     { margin: 0; color: var(--on-surface-muted); text-wrap: var(--text-wrap-body); max-width: var(--measure-body); hyphens: var(--text-hyphens); }
+.musy-box__slot     { display: flex; flex-direction: column; gap: var(--space-gap-stack); }
+
+/* ── type-step utilities ─────────────────────────────────────────────────────
+   Any component that takes a type step as a prop emits one of these. This is
+   the whole type scale, once, so a component never re-declares a step.      */
+[data-type-step="display-xl"] { font-family: var(--type-display-xl-family); font-size: var(--type-display-xl-size); font-weight: var(--type-display-xl-weight); line-height: var(--type-display-xl-line); letter-spacing: var(--type-display-xl-tracking); }
+[data-type-step="display-lg"] { font-family: var(--type-display-lg-family); font-size: var(--type-display-lg-size); font-weight: var(--type-display-lg-weight); line-height: var(--type-display-lg-line); letter-spacing: var(--type-display-lg-tracking); }
+[data-type-step="stage"]      { font-family: var(--type-stage-family);      font-size: var(--type-stage-size);      font-weight: var(--type-stage-weight);      line-height: var(--type-stage-line);      letter-spacing: var(--type-stage-tracking); }
+[data-type-step="heading-lg"] { font-family: var(--type-heading-lg-family); font-size: var(--type-heading-lg-size); font-weight: var(--type-heading-lg-weight); line-height: var(--type-heading-lg-line); letter-spacing: var(--type-heading-lg-tracking); }
+[data-type-step="heading-md"] { font-family: var(--type-heading-md-family); font-size: var(--type-heading-md-size); font-weight: var(--type-heading-md-weight); line-height: var(--type-heading-md-line); letter-spacing: var(--type-heading-md-tracking); }
+[data-type-step="heading-sm"] { font-family: var(--type-heading-sm-family); font-size: var(--type-heading-sm-size); font-weight: var(--type-heading-sm-weight); line-height: var(--type-heading-sm-line); letter-spacing: var(--type-heading-sm-tracking); }
+[data-type-step="body-lg"]    { font-family: var(--type-body-lg-family);    font-size: var(--type-body-lg-size);    font-weight: var(--type-body-lg-weight);    line-height: var(--type-body-lg-line); }
+[data-type-step="body-md"]    { font-family: var(--type-body-md-family);    font-size: var(--type-body-md-size);    font-weight: var(--type-body-md-weight);    line-height: var(--type-body-md-line); }
+[data-type-step="body-sm"]    { font-family: var(--type-body-sm-family);    font-size: var(--type-body-sm-size);    font-weight: var(--type-body-sm-weight);    line-height: var(--type-body-sm-line); letter-spacing: var(--type-body-sm-tracking); }
+[data-type-step="label-lg"]   { font-family: var(--type-label-lg-family);   font-size: var(--type-label-lg-size);   font-weight: var(--type-label-lg-weight);   line-height: var(--type-label-lg-line); letter-spacing: var(--type-label-lg-tracking); }
+[data-type-step="label-md"]   { font-family: var(--type-label-md-family);   font-size: var(--type-label-md-size);   font-weight: var(--type-label-md-weight);   line-height: var(--type-label-md-line); letter-spacing: var(--type-label-md-tracking); }
+
+
+/* ═══ 10 · MESSAGE ═════════════════════════════════════════════════════════
+   Content Box's shape at control padding. Every variant carries surface +
+   border + icon + text — four cues, never a solid fill (1.4.1).            */
+
+.musy-msg {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-gap-related);
+  padding: var(--space-inset-control);
+  border: var(--border-width-regular) var(--border-style-solid);
+  border-radius: var(--radius-card);
+}
+.musy-msg--info    { background-color: var(--feedback-info-surface);    border-color: var(--feedback-info-border);    color: var(--feedback-info-text); }
+.musy-msg--warning { background-color: var(--feedback-warning-surface); border-color: var(--feedback-warning-border); color: var(--feedback-warning-text); }
+.musy-msg--success { background-color: var(--feedback-success-surface); border-color: var(--feedback-success-border); color: var(--feedback-success-text); }
+.musy-msg--error   { background-color: var(--feedback-error-surface);   border-color: var(--feedback-error-border);   color: var(--feedback-error-text); }
+
+.musy-msg__icon { padding-block-start: var(--sp-1); }
+.musy-msg--info    .musy-msg__icon { color: var(--feedback-info-icon); }
+.musy-msg--warning .musy-msg__icon { color: var(--feedback-warning-icon); }
+.musy-msg--success .musy-msg__icon { color: var(--feedback-success-icon); }
+.musy-msg--error   .musy-msg__icon { color: var(--feedback-error-icon); }
+
+.musy-msg__main { display: flex; flex-direction: column; gap: var(--space-gap-related); min-width: 0; }
+.musy-msg__headline { margin: 0; color: inherit; text-wrap: var(--text-wrap-heading); }
+.musy-msg__text { margin: 0; color: inherit; text-wrap: var(--text-wrap-body); hyphens: var(--text-hyphens); max-width: var(--measure-body); }
+.musy-msg__action { margin-block-start: var(--sp-1); align-self: flex-start; }
+
+/* Dismiss is a ghost icon button at --target-min, spaced per 2.5.8. It sits in
+   the third grid column so it never reflows the text. */
+.musy-msg__dismiss {
+  align-self: start;
+  display: grid; place-items: center;
+  width: var(--target-primary); height: var(--target-primary);
+  margin: calc(var(--sp-2) * -1);
+  padding: 0;
+  border: 0; border-radius: var(--radius-full);
+  background: none; color: inherit;
+  cursor: pointer;
+  transition: background-color var(--motion-toggle);
+}
+@media (hover: hover) and (pointer: fine) {
+  .musy-msg__dismiss:hover,
+  .musy-msg__dismiss[data-force~="hover"] { background-color: var(--interactive-ghost-hover); }
+}
+.musy-msg__dismiss:active { background-color: var(--interactive-ghost-active); }
+
+/* Entrance. Travel comes from a token so reduced motion flattens it to zero. */
+.musy-msg[data-entering] { animation: musy-msg-in var(--motion-enter) both; }
+@keyframes musy-msg-in {
+  from { opacity: 0; transform: translateY(var(--motion-travel-sm)); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ═══ 11 · CONTENT LIST ════════════════════════════════════════════════════
+   Semantic HTML: <dl>. Each row is a de-emphasised term plus a content area;
+   that is a description list, not a table and not a <ul>.                   */
+
+.musy-clist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-stack);
+  margin: 0;
+}
+.musy-clist__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-1);
+}
+/* base-ui Separator between rows — a real role="separator", not a border that
+   assistive tech cannot see. The last row has none, so the list does not end
+   on a rule. */
+.musy-clist__rule {
+  height: var(--border-width-hairline);
+  border: 0;
+  margin: 0;
+  background-color: var(--border-subtle);
+}
+
+/* The term stays ABOVE its content — reading as that row's headline — until
+   --bp-lg. It used to switch at --bp-md, but at 768px a German label plus a
+   12rem column left the content squeezed against a wrapped two-line term; the
+   stacked arrangement reads better for longer, so the two-column form starts
+   one breakpoint later. */
+@media (min-width: 1024px) {
+  .musy-clist__row { grid-template-columns: minmax(0, 12rem) minmax(0, 1fr); gap: var(--space-gap-stack); align-items: start; }
+}
+
+.musy-clist__term {
+  margin: 0;
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  font-weight: var(--type-body-sm-weight);
+  line-height: var(--type-body-sm-line);
+  letter-spacing: var(--type-body-sm-tracking);
+  color: var(--on-surface-muted);
+  text-wrap: var(--text-wrap-body);
+}
+.musy-clist__def {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-related);
+  color: var(--on-surface);
+  text-wrap: var(--text-wrap-body);
+  hyphens: var(--text-hyphens);
+  max-width: var(--measure-body);
+}
+.musy-clist__media {
+  width: 100%;
+  border-radius: var(--radius-input);
+  background-color: var(--surface-sunken);
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+.musy-clist__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Bullet and numbered content. Kept as display:block list items rather than a
+   flex/grid stack, because a flex or grid item is no longer display:list-item
+   and silently loses its marker — the marker IS the semantics here. */
+.musy-clist__bullets,
+.musy-clist__numbers {
+  margin: 0;
+  padding-inline-start: var(--sp-5);
+  color: inherit;
+}
+.musy-clist__bullets { list-style: disc; }
+.musy-clist__numbers { list-style: decimal; }
+.musy-clist__bullets > li,
+.musy-clist__numbers > li {
+  text-wrap: var(--text-wrap-body);
+  hyphens: var(--text-hyphens);
+}
+.musy-clist__bullets > li + li,
+.musy-clist__numbers > li + li { margin-block-start: var(--sp-1); }
+.musy-clist__bullets > li::marker,
+.musy-clist__numbers > li::marker { color: var(--on-surface-muted); }
+.musy-clist__empty { color: var(--on-surface-muted); }
+
+
+/* ═══ 12 · LOGO ════════════════════════════════════════════════════════════
+   One asset, both themes (Decision: no distinct dark asset). Sizes are the two
+   the brief names; they are logo geometry, not spacing, so they are declared
+   here as component constants rather than borrowed from an unrelated scale.  */
+
+.musy-logo { display: inline-flex; align-items: center; gap: var(--space-gap-inline); }
+.musy-logo__mark { display: block; width: auto; height: var(--icon-size-lg); }        /* nav — 24px */
+.musy-logo--splash .musy-logo__mark { height: calc(var(--icon-size-xl) * 3); }        /* splash — 96px */
+.musy-logo__wordmark {
+  font-family: var(--type-heading-sm-family);
+  font-size: var(--type-heading-sm-size);
+  font-weight: var(--type-heading-sm-weight);
+  line-height: var(--type-heading-sm-line);
+  letter-spacing: var(--type-heading-sm-tracking);
+  color: var(--on-surface);
+}
+.musy-logo--splash .musy-logo__wordmark {
+  font-family: var(--type-display-lg-family);
+  font-size: var(--type-display-lg-size);
+  font-weight: var(--type-display-lg-weight);
+  line-height: var(--type-display-lg-line);
+  letter-spacing: var(--type-display-lg-tracking);
+}
+.musy-logo--splash { flex-direction: column; gap: var(--space-gap-stack); }
+
+
+/* ═══ 13 · RADIO CARDS ═════════════════════════════════════════════════════
+   Content Box's anatomy (media, headline, body, meta) made SELECTABLE with
+   Radio Group image's selection semantics. It is a third radio component
+   rather than a variant of 7.7 because the content is different in kind: a
+   card here carries a description, so it is read rather than scanned, and the
+   responsive rule inverts — a rich card cannot survive a two-up grid at 393px.
+
+   Mobile is a LIST (one column, media beside the text), tablet a two-up grid,
+   desktop three-up — but as a container-driven cap, not viewport media queries:
+   this group sits in the MVP's sidebar column and in the proof's theme panels,
+   where a viewport-keyed two-up rule overflowed a 381px container by 35px.
+
+   CARD FLOOR — 196px, the same --musy-card-min as §07, capped at three columns.
+   A card narrower than 196px cannot hold a headline, two lines of description
+   and a badge row without the badges wrapping one-per-line, so the grid drops a
+   column instead.                                                            */
+
+.musy-rcard-group {
+  display: grid;
+  /* list → two-up → three-up, driven by the container */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, max(var(--musy-card-min), calc((100% - 2 * var(--grid-gap)) / 3))), 1fr));
+  gap: var(--grid-gap);
+  border: 0; padding: 0; margin: 0;
+  min-inline-size: 0;
+  /* The card anatomy switches on the GROUP's width, not the viewport's — see
+     the .musy-rcard__body rules below. Without this the two halves disagree:
+     a 381px panel would get a correct one-up grid holding stacked cards that
+     were laid out for a desktop three-up. */
+  container-type: inline-size;
+  container-name: musy-rcard-group;
+}
+
+/* Radio.Root — the whole card is the control, so the target is the card and
+   there is no separate hit area to miss (2.5.8 is satisfied by a wide margin). */
+.musy-rcard__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--musy-rcard-media) minmax(0, 1fr);   /* list rows */
+  grid-template-areas: "media text";
+  align-items: start;
+  gap: var(--space-gap-stack);
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--space-inset-card);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle), border-color var(--motion-toggle);
+}
+/* The list thumbnail is a square at the height of the text block's first two
+   lines — derived from --target-guided rather than picked, so it steps with the
+   touch scale instead of drifting from it. */
+.musy-rcard__body { --musy-rcard-media: var(--target-guided); }
+
+/* From --bp-md the card stacks: full-bleed media above the text. The media then
+   spans the padding, which is why it is pulled out by the inset rather than the
+   card losing its padding. */
+/* From --bp-md WORTH OF GROUP WIDTH the card stacks: full-bleed media above the
+   text. Same threshold as before, measured against the container instead of the
+   viewport, so a narrow panel keeps the list form the §13 contract promises.
+   The media then spans the padding, which is why it is pulled out by the inset
+   rather than the card losing its padding. */
+@container musy-rcard-group (min-width: 768px) {
+  .musy-rcard__body {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "media" "text";
+    gap: var(--space-gap-related);
+  }
+}
+
+.musy-rcard__media {
+  grid-area: media;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius-input);
+  background-color: var(--surface-sunken);
+}
+.musy-rcard__media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@container musy-rcard-group (min-width: 768px) {
+  .musy-rcard__media {
+    aspect-ratio: 16 / 9;
+    margin: calc(var(--space-inset-card) * -1) calc(var(--space-inset-card) * -1) 0;
+    border-radius: var(--radius-input) var(--radius-input) 0 0;
+  }
+}
+
+/* Selected check, over the media. Same treatment as 7.7 so the two radio
+   families cannot teach two different selection languages. */
+.musy-rcard__check {
+  position: absolute;
+  inset-block-start: var(--sp-2);
+  inset-inline-end: var(--sp-2);
+  display: grid; place-items: center;
+  box-sizing: border-box;
+  width: var(--icon-size-lg);
+  height: var(--icon-size-lg);
+  border: var(--border-width-thick) var(--border-style-solid) transparent;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: transparent;
+  transition: background-color var(--motion-toggle), color var(--motion-toggle),
+              border-color var(--motion-toggle);
+}
+
+.musy-rcard__text {
+  grid-area: text;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+  min-width: 0;
+}
+.musy-rcard__headline {
+  margin: 0;
+  color: var(--on-surface);
+  text-wrap: var(--text-wrap-heading);
+}
+.musy-rcard__desc {
+  margin: 0;
+  color: var(--on-surface-muted);
+  text-wrap: var(--text-wrap-body);
+  hyphens: var(--text-hyphens);
+}
+/* The meta label. Last in the DOM and last in the reading order, de-emphasised
+   — it qualifies the card, it does not name it. */
+.musy-rcard__label {
+  margin-block-start: var(--sp-1);
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  line-height: var(--type-label-md-line);
+  letter-spacing: var(--type-label-md-tracking);
+  color: var(--on-surface-muted);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .musy-rcard__body[data-unchecked]:hover:not([data-disabled]),
+  .musy-rcard__body[data-force~="hover"] { background-color: var(--interactive-ghost-hover); }
+}
+.musy-rcard__body[data-unchecked]:active:not([data-disabled]),
+.musy-rcard__body[data-force~="active"] { background-color: var(--interactive-ghost-active); }
+
+.musy-rcard__body[data-checked] {
+  background-color: var(--interactive-primary-subtle);
+  border-color: var(--interactive-primary-border);
+  border-width: var(--border-width-thick);
+}
+.musy-rcard__body[data-checked] .musy-rcard__check {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-on);
+  color: var(--interactive-primary-on);
+}
+.musy-rcard__body[data-checked] .musy-rcard__headline { color: var(--interactive-primary-on-subtle); }
+
+.musy-rcard-group--accent-placeholder1 .musy-rcard__body[data-checked] {
+  background-color: var(--interactive-accent-placeholder1-subtle);
+  border-color: var(--interactive-accent-placeholder1-border);
+  border-width: var(--border-width-thick);
+}
+.musy-rcard-group--accent-placeholder1 .musy-rcard__body[data-checked] .musy-rcard__check {
+  background-color: var(--interactive-accent-placeholder1);
+  border-color: var(--interactive-accent-placeholder1-on);
+  color: var(--interactive-accent-placeholder1-on);
+}
+.musy-rcard-group--accent-placeholder1 .musy-rcard__body[data-checked] .musy-rcard__headline {
+  color: var(--interactive-accent-placeholder1-on-subtle);
+}
+.musy-rcard-group--accent-placeholder2 .musy-rcard__body[data-checked] {
+  background-color: var(--interactive-accent-placeholder2-subtle);
+  border-color: var(--interactive-accent-placeholder2-border);
+  border-width: var(--border-width-thick);
+}
+.musy-rcard-group--accent-placeholder2 .musy-rcard__body[data-checked] .musy-rcard__check {
+  background-color: var(--interactive-accent-placeholder2);
+  border-color: var(--interactive-accent-placeholder2-on);
+  color: var(--interactive-accent-placeholder2-on);
+}
+.musy-rcard-group--accent-placeholder2 .musy-rcard__body[data-checked] .musy-rcard__headline {
+  color: var(--interactive-accent-placeholder2-on-subtle);
+}
+
+.musy-rcard__body[data-disabled] {
+  background-color: var(--interactive-primary-disabled);
+  border-color: var(--border-subtle);
+  cursor: not-allowed;
+}
+.musy-rcard__body[data-disabled] .musy-rcard__headline,
+.musy-rcard__body[data-disabled] .musy-rcard__desc,
+.musy-rcard__body[data-disabled] .musy-rcard__label { color: var(--on-surface-disabled); }
+.musy-rcard__body[data-disabled] .musy-rcard__media { opacity: 0.5; }
+
+.musy-rcard-group__empty { grid-column: 1 / -1; }
+
+
+/* ═══ 14 · LIGHTBOX ════════════════════════════════════════════════════════
+   base-ui Dialog. The popup is a Content Box at panel padding — the lightbox
+   owns the scrim, the position and the motion, and nothing else: whatever it
+   frames stays a component in its own right.
+
+   Layer 1 owns the stack: --z-overlay for the scrim, --z-sheet for the popup.
+   The app root needs isolation: isolate so the portal always lands above page
+   content (see components/index.ts).                                        */
+
+.musy-lightbox__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  background-color: var(--alpha-scrim);
+  animation: musy-lb-fade var(--motion-enter) both;
+}
+.musy-lightbox__backdrop[data-closed] { animation: musy-lb-fade var(--motion-exit) both reverse; }
+
+.musy-lightbox__positioner {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-sheet);
+  display: grid;
+  place-items: center;
+  /* Inset, not centring alone: at 393px a centred popup with no inset touches
+     both edges, and the scrim stops reading as a scrim. */
+  padding: var(--sp-4);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.musy-lightbox__popup {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--measure-body);
+  /* Never taller than the viewport minus the positioner's inset — the popup
+     scrolls internally rather than pushing its close button off-screen. */
+  max-height: calc(100dvh - var(--sp-4) * 2);
+  overflow-y: auto;
+  padding: var(--space-inset-card);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-subtle);
+  border-radius: var(--radius-panel);
+  background-color: var(--surface-overlay);
+  box-shadow: var(--elevation-3);
+  animation: musy-lb-in var(--motion-enter) both;
+}
+.musy-lightbox__popup[data-closed] { animation: musy-lb-in var(--motion-exit) both reverse; }
+
+/* Travel comes from a token, so reduced motion flattens it to a plain fade
+   instead of the popup jumping. */
+@keyframes musy-lb-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes musy-lb-in {
+  from { opacity: 0; transform: translateY(var(--motion-travel-md)) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* The close control. A ghost icon button pinned to the popup's inset, in the
+   corner the content flows away from. */
+.musy-lightbox__close {
+  position: absolute;
+  inset-block-start: var(--space-inset-card);
+  inset-inline-end: var(--space-inset-card);
+  display: grid; place-items: center;
+  width: var(--target-primary); height: var(--target-primary);
+  margin: calc(var(--sp-2) * -1);
+  padding: 0;
+  border: 0; border-radius: var(--radius-full);
+  background: none; color: var(--on-surface);
+  cursor: pointer;
+  transition: background-color var(--motion-toggle);
+}
+@media (hover: hover) and (pointer: fine) {
+  .musy-lightbox__close:hover,
+  .musy-lightbox__close[data-force~="hover"] { background-color: var(--interactive-ghost-hover); }
+}
+.musy-lightbox__close:active { background-color: var(--interactive-ghost-active); }
+
+/* Reserve the close button's column so a long title never runs under it. */
+.musy-lightbox__popup > .musy-box:first-child .musy-box__headline,
+.musy-lightbox__popup .musy-lightbox__headline { padding-inline-end: var(--target-primary); }
+
+/* Inside the popup the framed box drops its own boundary: two nested outlines
+   at the same radius read as a rendering error, not as depth. */
+.musy-lightbox__popup > .musy-box {
+  border-color: transparent;
+  background-color: transparent;
+  padding: 0;
+}
+
+
+/* ═══ FORCED COLOURS ═══════════════════════════════════════════════════════
+   Layer 1 hands colour to the OS. What it cannot do is keep a state visible
+   once every fill becomes Canvas — so the state cues that survive are the
+   structural ones, restated here in system keywords.                        */
+@media (forced-colors: active) {
+  .musy-icon-btn, .musy-btn, .musy-radio__body, .musy-radio-card__body,
+  .musy-rcard__body, .musy-switch__track, .musy-msg, .musy-box,
+  .musy-lightbox__popup {
+    border-color: CanvasText;
+  }
+  .musy-btn--primary, .musy-icon-btn--primary { background-color: ButtonFace; color: ButtonText; }
+  .musy-radio__body[data-checked],
+  .musy-radio-card__body[data-checked],
+  .musy-rcard__body[data-checked] { border-color: Highlight; }
+  .musy-rcard__body[data-checked] .musy-rcard__check { background-color: Highlight; color: HighlightText; }
+  .musy-radio__body[data-checked] .musy-radio__marker { background-color: Highlight; color: HighlightText; }
+  .musy-switch__track[data-checked] { background-color: Highlight; }
+  .musy-icon-btn:disabled, .musy-btn:disabled,
+  .musy-radio__body[data-disabled], .musy-switch__track[data-disabled] { color: GrayText; border-color: GrayText; }
+}
+
+
+/* ═══ PROOF HARNESS ════════════════════════════════════════════════════════
+   [data-force~="hover|active|focus"] pins a state so the proof page can show
+   it in a static screenshot. The forced selectors are appended to the REAL
+   rule lists above — there is no duplicated declaration, so a forced state and
+   a lived state cannot drift apart. Never ship data-force in product code.
+
+   INVARIANT: data-force goes on the element the state rules actually style —
+   the base-ui part, never a wrapper. Putting it on .musy-switch instead of
+   .musy-switch__track drew the focus ring around the whole 44px row, an
+   appearance the shipped component cannot produce, because Switch.Root (the
+   60x32 track) is what takes focus. A proof page that pins a state on the wrong
+   element is worse than one that omits it.                                   */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   OPT-IN · TINTED REST modifier
+   The unselected state carries the accent as a tinted fill; selection escalates
+   to the solid fill. Selection still differs by fill weight, border width and
+   the marker/check glyph, so it never rests on hue alone (1.4.1). Colours come
+   from the audited subtle/solid pairs — no new values.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.musy-switch,
+.musy-radio-group,
+.musy-radio-card-group,
+.musy-carousel,
+.musy-rcard-group {
+  --musy-rest-fill: var(--interactive-primary-subtle);
+  --musy-rest-fill-hover: var(--interactive-primary-subtle-hover);
+  --musy-rest-fill-active: var(--interactive-primary-subtle-active);
+  --musy-rest-border: var(--interactive-primary-border);
+  --musy-rest-on: var(--interactive-primary-on-subtle);
+  --musy-sel-fill: var(--interactive-primary);
+  --musy-sel-on: var(--interactive-primary-on);
+}
+.musy-switch.musy-switch--accent-placeholder1,
+.musy-radio-group.musy-radio-group--accent-placeholder1,
+.musy-radio-card-group.musy-radio-card-group--accent-placeholder1,
+.musy-carousel.musy-carousel--accent-placeholder1,
+.musy-rcard-group.musy-rcard-group--accent-placeholder1 {
+  --musy-rest-fill: var(--interactive-accent-placeholder1-subtle);
+  --musy-rest-fill-hover: var(--interactive-accent-placeholder1-subtle-hover);
+  --musy-rest-fill-active: var(--interactive-accent-placeholder1-subtle-active);
+  --musy-rest-border: var(--interactive-accent-placeholder1-border);
+  --musy-rest-on: var(--interactive-accent-placeholder1-on-subtle);
+  --musy-sel-fill: var(--interactive-accent-placeholder1);
+  --musy-sel-on: var(--interactive-accent-placeholder1-on);
+}
+.musy-switch.musy-switch--accent-placeholder2,
+.musy-radio-group.musy-radio-group--accent-placeholder2,
+.musy-radio-card-group.musy-radio-card-group--accent-placeholder2,
+.musy-carousel.musy-carousel--accent-placeholder2,
+.musy-rcard-group.musy-rcard-group--accent-placeholder2 {
+  --musy-rest-fill: var(--interactive-accent-placeholder2-subtle);
+  --musy-rest-fill-hover: var(--interactive-accent-placeholder2-subtle-hover);
+  --musy-rest-fill-active: var(--interactive-accent-placeholder2-subtle-active);
+  --musy-rest-border: var(--interactive-accent-placeholder2-border);
+  --musy-rest-on: var(--interactive-accent-placeholder2-on-subtle);
+  --musy-sel-fill: var(--interactive-accent-placeholder2);
+  --musy-sel-on: var(--interactive-accent-placeholder2-on);
+}
+
+/* 05 · Switch — OFF track tinted. ON is left exactly as it was.
+   Every rule here is guarded against [data-disabled]: these selectors outrank
+   the disabled treatment (they carry one class more and sit later in the file),
+   so without the guard a disabled OFF switch would look identical to a live
+   one. */
+.musy-switch .musy-switch__track[data-unchecked]:not([data-disabled]) {
+  background-color: var(--musy-rest-fill);
+  border-color: var(--musy-rest-border);
+}
+.musy-switch .musy-switch__track[data-unchecked]:not([data-disabled]) .musy-switch__knob {
+  color: var(--musy-rest-on);
+}
+/* Pointer feedback DEEPENS the tint. The pre-existing unchecked :active fill is
+   a grey — correct when the rest state was grey, wrong now that it is tinted,
+   because a press would flash sideways into another hue instead of pressing
+   further into this one. */
+@media (hover: hover) and (pointer: fine) {
+  .musy-switch .musy-switch__track[data-unchecked]:hover:not([data-disabled]),
+  .musy-switch .musy-switch__track[data-unchecked][data-force~="hover"] {
+    background-color: var(--musy-rest-fill-hover);
+  }
+}
+.musy-switch .musy-switch__track[data-unchecked]:active:not([data-disabled]),
+.musy-switch .musy-switch__track[data-unchecked][data-force~="active"] {
+  background-color: var(--musy-rest-fill-active);
+}
+
+/* 06 · Radio group — text */
+.musy-radio-group .musy-radio__body[data-unchecked]:not([data-disabled]) {
+  background-color: var(--musy-rest-fill);
+  border-color: var(--musy-rest-border);
+}
+.musy-radio-group .musy-radio__body[data-unchecked]:not([data-disabled]) .musy-radio__label { color: var(--musy-rest-on); }
+.musy-radio-group .musy-radio__body[data-unchecked]:not([data-disabled]) .musy-radio__marker { border-color: var(--musy-rest-border); }
+@media (hover: hover) {
+  .musy-radio-group .musy-radio__body[data-unchecked]:hover:not([data-disabled]),
+  .musy-radio-group .musy-radio__body[data-unchecked][data-force~="hover"] {
+    background-color: var(--musy-rest-fill-hover);
+  }
+}
+.musy-radio-group .musy-radio__body[data-unchecked]:active:not([data-disabled]),
+.musy-radio-group .musy-radio__body[data-unchecked][data-force~="active"] {
+  background-color: var(--musy-rest-fill-active);
+}
+.musy-radio-group .musy-radio__body[data-checked] {
+  background-color: var(--musy-sel-fill);
+  border-color: var(--musy-rest-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-group .musy-radio__body[data-checked] .musy-radio__label { color: var(--musy-sel-on); }
+.musy-radio-group .musy-radio__body[data-checked] .musy-radio__marker {
+  background-color: var(--surface-raised);
+  border-color: var(--surface-raised);
+  color: var(--musy-sel-fill);
+}
+
+/* 07 · Radio group — image + text */
+.musy-radio-card-group .musy-radio-card__body[data-unchecked]:not([data-disabled]) {
+  background-color: var(--musy-rest-fill);
+  border-color: var(--musy-rest-border);
+}
+.musy-radio-card-group .musy-radio-card__body[data-unchecked]:not([data-disabled]) .musy-radio-card__label { color: var(--musy-rest-on); }
+@media (hover: hover) {
+  .musy-radio-card-group .musy-radio-card__body[data-unchecked]:hover:not([data-disabled]),
+  .musy-radio-card-group .musy-radio-card__body[data-unchecked][data-force~="hover"] {
+    background-color: var(--musy-rest-fill-hover);
+  }
+}
+.musy-radio-card-group .musy-radio-card__body[data-unchecked]:active:not([data-disabled]),
+.musy-radio-card-group .musy-radio-card__body[data-unchecked][data-force~="active"] {
+  background-color: var(--musy-rest-fill-active);
+}
+.musy-radio-card-group .musy-radio-card__body[data-checked] {
+  background-color: var(--musy-sel-fill);
+  border-color: var(--musy-rest-border);
+  border-width: var(--border-width-thick);
+}
+.musy-radio-card-group .musy-radio-card__body[data-checked] .musy-radio-card__label { color: var(--musy-sel-on); }
+.musy-radio-card-group .musy-radio-card__body[data-checked] .musy-radio-card__check {
+  background-color: var(--surface-raised);
+  border-color: var(--surface-raised);
+  color: var(--musy-sel-fill);
+}
+
+/* 13 · Radio cards */
+.musy-rcard-group .musy-rcard__body[data-unchecked]:not([data-disabled]) {
+  background-color: var(--musy-rest-fill);
+  border-color: var(--musy-rest-border);
+}
+.musy-rcard-group .musy-rcard__body[data-unchecked]:not([data-disabled]) .musy-rcard__headline { color: var(--musy-rest-on); }
+@media (hover: hover) {
+  .musy-rcard-group .musy-rcard__body[data-unchecked]:hover:not([data-disabled]),
+  .musy-rcard-group .musy-rcard__body[data-unchecked][data-force~="hover"] {
+    background-color: var(--musy-rest-fill-hover);
+  }
+}
+.musy-rcard-group .musy-rcard__body[data-unchecked]:active:not([data-disabled]),
+.musy-rcard-group .musy-rcard__body[data-unchecked][data-force~="active"] {
+  background-color: var(--musy-rest-fill-active);
+}
+.musy-rcard-group .musy-rcard__body[data-checked] {
+  background-color: var(--musy-sel-fill);
+  border-color: var(--musy-rest-border);
+  border-width: var(--border-width-thick);
+}
+.musy-rcard-group .musy-rcard__body[data-checked] .musy-rcard__headline,
+.musy-rcard-group .musy-rcard__body[data-checked] .musy-rcard__desc,
+.musy-rcard-group .musy-rcard__body[data-checked] .musy-rcard__label {
+  color: var(--musy-sel-on);
+}
+.musy-rcard-group .musy-rcard__body[data-checked] .musy-rcard__check {
+  background-color: var(--surface-raised);
+  border-color: var(--surface-raised);
+  color: var(--musy-sel-fill);
+}
+
+
+/* ═══ 15 · FIELD ═══════════════════════════════════════════════════════════
+   base-ui Field (`@base-ui/react/field`). Field.Root groups; Field.Label is a
+   real <label> auto-associated with Field.Control; Field.Description and
+   Field.Error are wired as the control's accessible description via
+   aria-describedby by the primitive — so this file only paints, and never
+   invents an association it would have to keep in sync.
+
+   State comes from base-ui's own attributes on the part
+   (data-disabled / data-invalid / data-valid / data-dirty / data-touched /
+   data-filled / data-focused), which is why there is no wrapper-class variant
+   for validity here.
+
+   1.4.1: an invalid field is border-colour AND border-weight AND the Error
+   message AND aria-invalid — never the red ring alone. A valid field is only
+   ever confirmed after it was touched, so a pristine form is not a wall of
+   green.                                                                     */
+
+.musy-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-related);
+  min-inline-size: 0;
+}
+
+.musy-field__label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-1);
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  letter-spacing: var(--type-label-md-tracking);
+  color: var(--on-surface);
+  cursor: pointer;
+}
+.musy-field__label[data-disabled] { color: var(--on-surface-disabled); cursor: not-allowed; }
+
+/* The required marker is decorative — the real signal is the control's own
+   `required`, which base-ui reflects to assistive tech. */
+.musy-field__required { color: var(--feedback-error-icon); }
+
+.musy-field__control {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--target-primary);
+  padding: var(--space-inset-control);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-input);
+  background-color: var(--surface-raised);
+  color: var(--on-surface);
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  /* No transition on border-color / background-color. A validity change must
+     land immediately and unconditionally: these two properties are the ones the
+     rule is FOR, and a transition that gets interrupted by a re-render can
+     leave them showing the state the field is no longer in. Correctness over
+     the 140ms fade. */
+}
+.musy-field__control::placeholder { color: var(--on-surface-muted); opacity: 1; }
+@media (hover: hover) and (pointer: fine) {
+  .musy-field__control:hover:not([data-disabled]):not(:disabled),
+  .musy-field__control[data-force~="hover"] { border-color: var(--on-surface-muted); }
+}
+
+/* Multi-line. Guided height is two comfort rows — derived, not picked. */
+.musy-field__control--textarea {
+  min-height: calc(var(--target-comfort) * 2);
+  resize: vertical;
+  line-height: var(--type-body-md-line);
+}
+
+/* Filled is not a validity state — it only says the control carries a value.
+   Kept as a hook (base-ui sets it) with a deliberately quiet treatment. */
+.musy-field__control[data-filled] { background-color: var(--surface-raised); }
+
+.musy-field__control[data-invalid],
+.musy-field__control[aria-invalid="true"] {
+  border-color: var(--feedback-error-border);
+  border-width: var(--border-width-thick);
+  background-color: var(--feedback-error-surface);
+}
+/* Only ever after the field was touched — see the section note. */
+.musy-field__control[data-valid][data-touched] {
+  border-color: var(--feedback-success-border);
+  border-width: var(--border-width-thick);
+}
+
+.musy-field__control[data-disabled],
+.musy-field__control:disabled {
+  border-color: var(--border-subtle);
+  background-color: var(--interactive-primary-disabled);
+  color: var(--on-surface-disabled);
+  cursor: not-allowed;
+}
+
+.musy-field__description {
+  margin: 0;
+  max-width: var(--measure-body);
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--on-surface-muted);
+  text-wrap: pretty;
+}
+.musy-field__description[data-disabled] { color: var(--on-surface-disabled); }
+
+/* Error. Icon + text, mirroring §10 Message so a field-level error and a
+   page-level one teach the same thing. */
+.musy-field__error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--feedback-error-text);
+  text-wrap: pretty;
+}
+.musy-field__error > .musy-icon { flex-shrink: 0; color: var(--feedback-error-icon); }
+
+/* Success counterpart. Not a base-ui part — Field.Validity renders it — so it
+   is named for what it is rather than pretending to be Field.Error. */
+.musy-field__valid {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--feedback-success-text);
+}
+.musy-field__valid > .musy-icon { flex-shrink: 0; color: var(--feedback-success-icon); }
+
+/* Field.Item — a control that sits BESIDE its label (checkbox, switch, radio)
+   with an optional description under both. The 44px target is the row. */
+.musy-field__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-1) var(--space-gap-related);
+  min-height: var(--target-primary);
+}
+.musy-field__item > .musy-field__label { grid-column: 2; }
+.musy-field__item > .musy-field__description,
+.musy-field__item > .musy-field__error { grid-column: 2; }
+
+/* A group of fields. The gap between two fields is the stack gap, never the
+   related gap — a label must never read as belonging to the field above it. */
+.musy-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gap-stack);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+
+/* ═══ 16 · INTERACTIVE WIZARD ══════════════════════════════════════════════
+   Semantic HTML: <nav> wrapping an <ol> — the steps are ordered and the order
+   IS the meaning (same reasoning as §8 Process, which is the non-interactive
+   sibling of this component). Each step is a <button>, so keyboard support is
+   the platform's; the selected step carries aria-current="step".
+
+   Four states, and they are a progression, not a palette:
+     disabled   an earlier step is still open — not reachable yet
+     active     reachable: every step before it is completed
+     selected   the step being shown now
+     completed  done; its marker swaps the number for a check
+
+   Selection and completion each change the MARKER GLYPH or WEIGHT as well as
+   the fill, so the progression survives without colour (1.4.1). Navigation
+   rules live in the component, not in CSS: any step that is not disabled is
+   clickable, which means every earlier step is always reachable.            */
+
+.musy-wizard { min-inline-size: 0; }
+
+/* The run is a ROW at every width. Narrow screens do not stack it — they
+   COLLAPSE it: the step on screen keeps its label, every other step shrinks to
+   its marker alone. A stacked wizard costs four rows of vertical space to say
+   what one row of markers says, and on a phone that space is the content.
+   stretch, not flex-start: a step whose label wraps must not end up taller than
+   its neighbours — every trigger takes the height of the tallest. */
+.musy-wizard__list {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.musy-wizard__step {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex: 0 1 auto;                  /* collapsed steps take only their marker */
+  min-inline-size: 0;
+}
+@media (min-width: 768px) {
+  .musy-wizard__step { flex: 1 1 0; }   /* full width: every step shares evenly */
+}
+
+.musy-wizard__trigger {
+  display: flex;
+  align-items: center;
+  gap: var(--space-gap-related);
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: var(--target-primary);
+  padding: var(--sp-2);
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius-input);
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--motion-toggle);
+}
+@media (hover: hover) and (pointer: fine) {
+  .musy-wizard__trigger:hover:not([data-state="disabled"]),
+  .musy-wizard__trigger[data-force~="hover"] { background-color: var(--interactive-ghost-hover); }
+}
+.musy-wizard__trigger:active:not([data-state="disabled"]),
+.musy-wizard__trigger[data-force~="active"] { background-color: var(--interactive-ghost-active); }
+.musy-wizard__trigger[data-state="disabled"] { cursor: not-allowed; }
+
+/* COLLAPSED — below the breakpoint, or wherever --compact is set. The label is
+   moved out of sight rather than removed: the button must keep its accessible
+   name, so a marker-only step still announces "Klang, erreichbar" and is never
+   just "2". The marker is already a 44px target, so the collapsed button needs
+   no size of its own. */
+.musy-wizard__trigger[aria-current="step"] { flex: 1 1 auto; }
+
+@media (max-width: 767.98px) {
+  /* Connectors stop growing: in a collapsed run the free width belongs to the
+     one step that still has a label, not split five ways with the rules
+     between the markers. */
+  .musy-wizard__connector { flex: 0 1 var(--sp-4); }
+  /* Only the step that still has a label grows. The even four-way split of the
+     expanded run would cap it at a quarter of the width. */
+  .musy-wizard__step { flex: 0 1 auto; }
+  .musy-wizard__step:has([aria-current="step"]) { flex: 1 1 auto; min-width: 0; }
+  .musy-wizard__trigger:not([aria-current="step"]) { flex: 0 0 auto; padding-inline: var(--sp-1); }
+  .musy-wizard__trigger:not([aria-current="step"]) .musy-wizard__label {
+    position: absolute;
+    width: var(--border-width-hairline);
+    height: var(--border-width-hairline);
+    padding: 0;
+    margin: calc(var(--border-width-hairline) * -1);
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+/* Container-driven collapse. The media query above cannot see a wizard sitting
+   in a 400px rail on a 1440px screen — that case has to be told. */
+.musy-wizard--compact .musy-wizard__connector { flex: 0 1 var(--sp-4); }
+.musy-wizard--compact .musy-wizard__step { flex: 0 1 auto; }
+.musy-wizard--compact .musy-wizard__step:has([aria-current="step"]) { flex: 1 1 auto; min-width: 0; }
+.musy-wizard--compact .musy-wizard__trigger:not([aria-current="step"]) {
+  flex: 0 0 auto;
+  padding-inline: var(--sp-1);
+}
+.musy-wizard--compact .musy-wizard__trigger:not([aria-current="step"]) .musy-wizard__label {
+  position: absolute;
+  width: var(--border-width-hairline);
+  height: var(--border-width-hairline);
+  padding: 0;
+  margin: calc(var(--border-width-hairline) * -1);
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The marker. Geometry is §8's step circle so the two step components cannot
+   drift apart. */
+.musy-wizard__marker {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: var(--target-primary);
+  height: var(--target-primary);
+  border: var(--border-width-regular) var(--border-style-solid) var(--interactive-primary-border);
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--interactive-primary-on-subtle);
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  letter-spacing: var(--type-label-md-tracking);
+  transition: background-color var(--motion-toggle),
+              border-color var(--motion-toggle),
+              color var(--motion-toggle);
+}
+
+.musy-wizard__label {
+  min-width: 0;
+  flex: 1 1 auto;
+  /* anywhere, not break-word: a label that runs out of room wraps between its
+     words. Mid-word breaks ("Selec / t Card") are never the right answer for a
+     two-word step name — if even one word will not fit, the run is too narrow
+     and the compact treatment is what should apply. */
+  overflow-wrap: normal;
+  word-break: normal;
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  letter-spacing: var(--type-label-md-tracking);
+  color: var(--on-surface);
+  text-wrap: pretty;
+}
+.musy-wizard__hint {
+  display: block;
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--type-body-sm-line);
+  color: var(--on-surface-muted);
+}
+
+/* DISABLED — an earlier step is still open. */
+.musy-wizard__trigger[data-state="disabled"] .musy-wizard__marker {
+  border-color: var(--border-subtle);
+  color: var(--on-surface-disabled);
+}
+.musy-wizard__trigger[data-state="disabled"] .musy-wizard__label,
+.musy-wizard__trigger[data-state="disabled"] .musy-wizard__hint { color: var(--on-surface-disabled); }
+
+/* ACTIVE — reachable. Outlined marker, ordinary label. */
+.musy-wizard__trigger[data-state="active"] .musy-wizard__marker {
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on-subtle);
+}
+
+/* SELECTED — the step on screen. Solid marker + a heavier label: two cues. */
+.musy-wizard__trigger[data-state="selected"] .musy-wizard__marker {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on);
+}
+.musy-wizard__trigger[data-state="selected"] .musy-wizard__label {
+  color: var(--interactive-primary-on-subtle);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Where you are, independent of completion: once every step is done the run has
+   no "selected" step left to paint, but aria-current still says which one is on
+   screen — so the label weight follows the ATTRIBUTE, not just the state. */
+.musy-wizard__trigger[aria-current="step"] .musy-wizard__label {
+  color: var(--interactive-primary-on-subtle);
+  font-weight: var(--font-weight-bold);
+}
+
+/* COMPLETED — tinted marker, and the number is replaced by a check. */
+.musy-wizard__trigger[data-state="completed"] .musy-wizard__marker {
+  background-color: var(--interactive-primary-subtle);
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on-subtle);
+}
+
+/* The number and the check are siblings; the state decides which one shows, so
+   a completed step never has to re-render its marker from a different tree. */
+.musy-wizard__num, .musy-wizard__check { display: grid; place-items: center; }
+.musy-wizard__trigger[data-state="completed"] .musy-wizard__num { display: none; }
+.musy-wizard__trigger:not([data-state="completed"]) .musy-wizard__check { display: none; }
+
+/* Connector. Decorative — it is not in the reading order, and it carries the
+   completed colour only when the step BEFORE it is done. */
+.musy-wizard__connector {
+  flex: 1 1 auto;
+  align-self: center;
+  min-width: var(--sp-2);
+  border-block-start: var(--border-width-regular) var(--border-style-solid) var(--border-subtle);
+}
+@media (min-width: 768px) {
+  .musy-wizard__connector { min-width: var(--sp-4); }
+}
+.musy-wizard__connector[data-complete] { border-color: var(--interactive-primary-border); }
+
+/* VERTICAL — opt-in, and no longer what narrow screens do (they collapse; see
+   above). This is for the case where the labels themselves are the point and
+   there is height to spend: a settings rail, a long checklist. Labels stay
+   visible here at every width — a stacked run that hid them would be all
+   markers and no meaning. */
+.musy-wizard--vertical .musy-wizard__list { flex-direction: column; }
+.musy-wizard--vertical .musy-wizard__step { flex: 0 0 auto; flex-direction: column; align-items: stretch; }
+.musy-wizard--vertical .musy-wizard__connector {
+  align-self: stretch;
+  min-height: var(--sp-4);
+  min-width: 0;
+  margin-inline-start: calc(var(--target-primary) / 2 + var(--sp-2));
+  border-block-start: 0;
+  border-inline-start: var(--border-width-regular) var(--border-style-solid) var(--border-subtle);
+}
+.musy-wizard--vertical .musy-wizard__connector[data-complete] { border-color: var(--interactive-primary-border); }
+.musy-wizard--vertical .musy-wizard__trigger:not([aria-current="step"]) { flex: 1 1 auto; padding-inline: var(--sp-2); }
+.musy-wizard--vertical .musy-wizard__trigger:not([aria-current="step"]) .musy-wizard__label {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip-path: none;
+  white-space: normal;
+}
+
+/* The panel the wizard drives. Content Box geometry — the wizard owns the
+   header, not the body. */
+.musy-wizard__panel {
+  margin-block-start: var(--space-gap-stack);
+  padding: var(--space-inset-card);
+  border: var(--border-width-hairline) var(--border-style-solid) var(--border-subtle);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+}
+.musy-wizard__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-gap-related);
+  margin-block-start: var(--space-gap-stack);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   §18 · PHOTO UPLOAD
+   Composed on §15 Field's parts — label, description and error are
+   .musy-field__*, declared once. Only the two surfaces that are genuinely new
+   live here: the empty drop zone and the selected-file row.
+
+   The native <input type="file"> is NOT styled. It is displaced with
+   .musy-sr-only and triggered by a real CTA Button, which is the only way to
+   dress a file input without breaking the platform picker, the focus ring or
+   the keyboard path.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* The zone is two touch rows tall — derived from the guided target so it steps
+   with the touch scale rather than drifting to a picked height. */
+.musy-upload__zone {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-gap-related);
+  min-height: calc(var(--target-guided) * 2);
+  padding: var(--space-inset-card);
+  border: var(--border-width-thick) var(--border-style-dashed) var(--border-subtle);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-sunken);
+  text-align: center;
+  transition: border-color var(--motion-toggle), background-color var(--motion-toggle);
+}
+
+/* Drag-over is an enhancement over the button, never the only way in (2.1.1). */
+.musy-upload__zone[data-dragover] {
+  border-color: var(--interactive-primary-border);
+  background-color: var(--interactive-primary-subtle);
+}
+
+/* The focusable element is the displaced input, so the ring has to be drawn on
+   the zone that stands in for it. */
+.musy-upload__zone:focus-within {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.musy-upload__zone[data-invalid] { border-color: var(--feedback-error-border); }
+
+.musy-upload__zone[data-disabled] {
+  border-color: var(--border-subtle);
+  background-color: var(--interactive-primary-disabled);
+  cursor: not-allowed;
+}
+
+.musy-upload__zone-icon { color: var(--on-surface-muted); display: grid; }
+.musy-upload__zone[data-disabled] .musy-upload__zone-icon { color: var(--on-surface-disabled); }
+
+.musy-upload__zone-text {
+  margin: 0;
+  max-width: var(--measure-body);
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  color: var(--on-surface-muted);
+  text-wrap: pretty;
+  hyphens: var(--text-hyphens);
+  overflow-wrap: break-word;
+}
+.musy-upload__zone[data-disabled] .musy-upload__zone-text { color: var(--on-surface-disabled); }
+
+/* Selected. Thumbnail / meta / actions — the actions sit in their own column so
+   a long filename can never push them out of reach. */
+.musy-upload__preview {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-gap-related);
+  padding: var(--sp-2);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+}
+.musy-upload__preview[data-disabled] {
+  border-color: var(--border-subtle);
+  background-color: var(--interactive-primary-disabled);
+}
+
+/* Square thumbnail on the touch scale, matching Radio Cards' mobile media. */
+.musy-upload__thumb {
+  display: block;
+  inline-size: var(--target-guided);
+  block-size: var(--target-guided);
+  object-fit: cover;
+  border-radius: var(--radius-input);
+  background-color: var(--surface-sunken);
+}
+.musy-upload__preview[data-disabled] .musy-upload__thumb { opacity: 0.5; }
+
+.musy-upload__meta { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+
+/* One line with an ellipsis is legal here and nowhere else in the set: a
+   filename is a machine string the user already recognises, not copy they have
+   to read to make a choice. The full name stays in the DOM for AT. */
+.musy-upload__name {
+  font-family: var(--type-label-lg-family);
+  font-size: var(--type-label-lg-size);
+  font-weight: var(--type-label-lg-weight);
+  letter-spacing: var(--type-label-lg-tracking);
+  color: var(--on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.musy-upload__size {
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  color: var(--on-surface-muted);
+}
+.musy-upload__preview[data-disabled] .musy-upload__name,
+.musy-upload__preview[data-disabled] .musy-upload__size { color: var(--on-surface-disabled); }
+
+.musy-upload__preview-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-gap-inline);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   §19 · VOICE NOTE
+   Also composed on §15 Field's parts. Three states on one control surface:
+   idle, recording, recorded — a cycle, not a palette.
+
+   The recording state borrows the error family for its surface and border, and
+   that is deliberate rather than a reuse of convenience: red-while-live is the
+   one colour convention this audience already holds, and the family is the only
+   one solved for a non-brand hue at 3:1.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.musy-voice__control {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-gap-related);
+  min-height: var(--target-comfort);
+  padding: var(--sp-2);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+}
+
+/* Two cues, never hue alone: the border STEPS to thick as well as changing
+   family, so the live state survives greyscale (1.4.1). */
+.musy-voice__control[data-state="recording"] {
+  border-width: var(--border-width-thick);
+  border-color: var(--feedback-error-border);
+  background-color: var(--feedback-error-surface);
+}
+
+.musy-voice__control[data-disabled] {
+  border-color: var(--border-subtle);
+  background-color: var(--interactive-primary-disabled);
+}
+
+.musy-voice__text {
+  margin: 0;
+  max-width: var(--measure-body);
+  font-family: var(--type-body-md-family);
+  font-size: var(--type-body-md-size);
+  line-height: var(--type-body-md-line);
+  color: var(--on-surface-muted);
+  text-wrap: pretty;
+  hyphens: var(--text-hyphens);
+  overflow-wrap: break-word;
+}
+.musy-voice__control[data-disabled] .musy-voice__text { color: var(--on-surface-disabled); }
+
+.musy-voice__live { display: flex; align-items: center; gap: var(--space-gap-inline); min-width: 0; }
+
+/* Decorative — the status text beside it is what carries the state. */
+.musy-voice__dot {
+  flex-shrink: 0;
+  inline-size: var(--icon-size-sm);
+  block-size: var(--icon-size-sm);
+  border-radius: var(--radius-full);
+  background-color: var(--feedback-error-icon);
+  animation: musy-voice-pulse var(--motion-duration-slower) var(--motion-ease-standard) infinite alternate;
+}
+
+@keyframes musy-voice-pulse { to { opacity: 0.4; } }
+
+/* Layer 1 collapses every duration to 1ms under reduced motion, which would
+   strobe an infinite alternate. The pulse is DROPPED, not shortened — the same
+   decision the button spinner takes. */
+@media (prefers-reduced-motion: reduce) {
+  .musy-voice__dot { animation: none; }
+}
+
+.musy-voice__status {
+  font-family: var(--type-label-lg-family);
+  font-size: var(--type-label-lg-size);
+  font-weight: var(--type-label-lg-weight);
+  letter-spacing: var(--type-label-lg-tracking);
+  color: var(--feedback-error-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.musy-voice__playback { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+
+.musy-voice__bar { display: block; inline-size: 100%; }
+
+.musy-voice__track {
+  display: block;
+  block-size: var(--sp-1);
+  border-radius: var(--radius-full);
+  background-color: var(--surface-sunken);
+  overflow: hidden;
+}
+.musy-voice__fill {
+  display: block;
+  block-size: 100%;
+  border-radius: var(--radius-full);
+  background-color: var(--interactive-primary);
+  transition: inline-size var(--motion-toggle);
+}
+.musy-voice__control[data-disabled] .musy-voice__fill { background-color: var(--on-surface-disabled); }
+
+/* Tabular figures: a monospaced digit column stops the row twitching once a
+   second while the head moves. */
+.musy-voice__time {
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  color: var(--on-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+.musy-voice__control[data-disabled] .musy-voice__time { color: var(--on-surface-disabled); }
+
+/* Forced colours: the live state must not be carried by a system-repainted
+   surface alone, so the boundary stays the cue. */
+@media (forced-colors: active) {
+  .musy-voice__control[data-state="recording"] { border-color: Highlight; }
+  .musy-voice__fill { background-color: Highlight; }
+  .musy-upload__zone[data-dragover] { border-color: Highlight; }
+}
+
+
+/* ═══ BADGE ════════════════════════════════════════════════════════════════
+   A static metadata marker: it labels, it never acts. Deliberately NOT a
+   control — no hover, no active, no focus ring, no touch target. A badge that
+   can be pressed is a Button; a badge that can be dismissed is a Chip, and
+   neither of those is this component. Rendering it as a <span> is the whole
+   accessibility story.
+
+   Anatomy: an OPTIONAL leading icon at --icon-size-sm (so --icon-stroke-sm,
+   token gap G1 — PROVISIONAL) plus a label at label-md. label-md is the
+   compact-control step and sits below Layer 1's 17px body floor on purpose:
+   that floor governs prose, and a badge is not prose. It is the smallest type
+   in the system that is still allowed to carry meaning.
+
+   1.4.1 — colour never carries the meaning alone. Every status variant pairs
+   its fill with a glyph AND the word, and every fill carries a ≥3:1 border so
+   the badge keeps a boundary on low-contrast displays and in forced colours. */
+
+.musy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  box-sizing: border-box;
+  padding-block: var(--sp-1);
+  padding-inline: var(--sp-3);
+  border: var(--border-width-regular) var(--border-style-solid) transparent;
+  border-radius: var(--radius-full);
+  font-family: var(--type-label-md-family);
+  font-size: var(--type-label-md-size);
+  font-weight: var(--type-label-md-weight);
+  line-height: var(--type-label-md-line);
+  letter-spacing: var(--type-label-md-tracking);
+  text-wrap: nowrap;
+}
+
+/* With an icon the leading inset comes down a step: a round glyph already
+   reads as inset against a pill, and the full --sp-3 makes the badge look
+   lopsided. Purely optical, and it is why the icon is a real element rather
+   than a ::before. */
+.musy-badge:has(> .musy-icon:first-child) { padding-inline-start: var(--sp-2); }
+.musy-badge > .musy-icon { flex: 0 0 auto; }
+
+/* Neutral — the default. The one variant with no semantics at all: it marks
+   metadata (duration, count, category), never state. */
+.musy-badge--neutral {
+  background-color: var(--surface-sunken);
+  border-color: var(--border-strong);
+  color: var(--on-surface);
+}
+/* Outline — same neutral meaning, less weight. For badges sitting ON a filled
+   or tinted surface, where a second fill would read as a nested card. */
+.musy-badge--outline {
+  background-color: transparent;
+  border-color: var(--border-strong);
+  color: var(--on-surface);
+}
+/* Primary / accent — brand emphasis, still not state. Solid fills, so they
+   take the family's -on foreground and mandatory -border. */
+.musy-badge--primary {
+  background-color: var(--interactive-primary);
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on);
+}
+.musy-badge--primary-subtle {
+  background-color: var(--interactive-primary-subtle);
+  border-color: var(--interactive-primary-border);
+  color: var(--interactive-primary-on-subtle);
+}
+.musy-badge--accent-placeholder1 {
+  background-color: var(--interactive-accent-placeholder1);
+  border-color: var(--interactive-accent-placeholder1-border);
+  color: var(--interactive-accent-placeholder1-on);
+}
+.musy-badge--accent-placeholder2 {
+  background-color: var(--interactive-accent-placeholder2);
+  border-color: var(--interactive-accent-placeholder2-border);
+  color: var(--interactive-accent-placeholder2-on);
+}
+
+/* Status — the same four feedback families as Message, so a badge and a banner
+   describing the same condition cannot disagree. Tinted, never solid. */
+.musy-badge--info    { background-color: var(--feedback-info-surface);    border-color: var(--feedback-info-border);    color: var(--feedback-info-text); }
+.musy-badge--warning { background-color: var(--feedback-warning-surface); border-color: var(--feedback-warning-border); color: var(--feedback-warning-text); }
+.musy-badge--success { background-color: var(--feedback-success-surface); border-color: var(--feedback-success-border); color: var(--feedback-success-text); }
+.musy-badge--error   { background-color: var(--feedback-error-surface);   border-color: var(--feedback-error-border);   color: var(--feedback-error-text); }
+
+/* The icon takes the 3:1 -icon token, not the 4.5:1 -text token, exactly as in
+   Message: a glyph is a non-text element under 1.4.11. */
+.musy-badge--info    > .musy-icon { color: var(--feedback-info-icon); }
+.musy-badge--warning > .musy-icon { color: var(--feedback-warning-icon); }
+.musy-badge--success > .musy-icon { color: var(--feedback-success-icon); }
+.musy-badge--error   > .musy-icon { color: var(--feedback-error-icon); }
+
+/* A row of badges. Wraps, never scrolls — a badge that scrolls out of view is
+   metadata the user will not find. */
+.musy-badge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Inside a disabled Radio Card the badge dims with everything else, or it
+   becomes the brightest thing on an unavailable option. */
+.musy-rcard__body[data-disabled] .musy-badge,
+.musy-radio-card__body[data-disabled] .musy-badge {
+  background-color: transparent;
+  border-color: var(--on-surface-disabled);
+  color: var(--on-surface-disabled);
+}
+.musy-rcard__body[data-disabled] .musy-badge > .musy-icon,
+.musy-radio-card__body[data-disabled] .musy-badge > .musy-icon { color: var(--on-surface-disabled); }
+
+/* Forced colours: fills are repainted away, so the boundary and the text carry
+   the badge on their own — which they already do by construction. */
+@media (forced-colors: active) {
+  .musy-badge { border-color: CanvasText; }
+}
+
+
+/* ═══ MUSIC PLAYER ═════════════════════════════════════════════════════════
+   Two variations of one job: give a Method's track a control the listener can
+   trust. Both own the transport UI and its state machine and never an <audio>
+   element — the consuming app holds the media, exactly as §19 Voice Note never
+   touches getUserMedia.
+
+   A · TRACK BUTTON (.musy-mbtn)
+     Composed on §04 CTA Button rather than being a new button: one control,
+     one target, the whole button state model inherited. The GLYPH is the state
+     (play → pause → restart); the label never rewrites itself, because a label
+     that changes under the cursor is the one people misclick. The MM:SS
+     readout COUNTS DOWN — the only question a first-time listener has is how
+     long they are committing to, and a count-up answers it only if you already
+     hold the duration in your head.
+
+   B · PLAYER (.musy-mplayer)
+     A --target-guided (64px) icon button plus a scrubber. The handle is a real
+     slider — role="slider", arrow keys, Home/End — which is what base-ui
+     Slider renders; the anatomy here matches its parts one-to-one so the proof
+     page and the shipped component share a single DOM. The rail is --sp-1 like
+     §19's playback bar, but the grabbable area is --target-primary (44px): a
+     4px rail you can only catch at 4px is a rail nobody scrubs, and this is the
+     only DRAG control in the system — the one place a small target costs most.
+     --target-min is not an option here: Layer 1 permits it only inline in prose
+     and owes it --sp-2 of clear space, which a control stacked --sp-1 from a
+     title above and a time row below does not have.
+
+   ENDED IS A STATE, NOT AN EDGE CASE. Both variations swap to a restart glyph
+   at the end instead of quietly resetting to play, so "it finished" and "it
+   never started" are never the same picture. Two cues, never hue alone: the
+   glyph changes as well as the fill (1.4.1).
+
+   [OPEN · G5] Layer 1 has no track-rail height token. --sp-1 is borrowed from
+   §19, which set the same literal for the same reason — if a third component
+   needs it, it wants a real token rather than a third copy.               */
+
+/* ── A · Track button ─────────────────────────────────────────────────── */
+
+/* The countdown is pushed to the far end, so the glyph+label pair and the time
+   read as two columns however long the label is. A min-width stops the button
+   resizing as the digits tick. */
+.musy-btn.musy-mbtn {
+  justify-content: flex-start;
+  gap: var(--space-gap-related);
+  min-inline-size: 18ch;
+}
+.musy-mbtn__time {
+  margin-inline-start: auto;
+  /* Tabular figures: a proportional digit column shifts the label once a
+     second, which is the same twitch §19 solved. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── B · Player ───────────────────────────────────────────────────────── */
+
+.musy-mplayer {
+  --musy-mplayer-accent: var(--interactive-primary);
+  --musy-mplayer-accent-border: var(--interactive-primary-border);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-gap-related);
+  box-sizing: border-box;
+  padding: var(--sp-3);
+  border: var(--border-width-regular) var(--border-style-solid) var(--border-strong);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-raised);
+}
+.musy-mplayer--accent-placeholder1 {
+  --musy-mplayer-accent: var(--interactive-accent-placeholder1);
+  --musy-mplayer-accent-border: var(--interactive-accent-placeholder1-border);
+}
+.musy-mplayer--accent-placeholder2 {
+  --musy-mplayer-accent: var(--interactive-accent-placeholder2);
+  --musy-mplayer-accent-border: var(--interactive-accent-placeholder2-border);
+}
+.musy-mplayer[data-disabled] {
+  border-color: var(--border-subtle);
+  background-color: var(--interactive-primary-disabled);
+  --musy-mplayer-accent: var(--on-surface-disabled);
+  --musy-mplayer-accent-border: var(--on-surface-disabled);
+}
+
+.musy-mplayer__main { display: flex; flex-direction: column; gap: var(--sp-1); min-width: 0; }
+
+.musy-mplayer__title {
+  font-family: var(--type-label-lg-family);
+  font-size: var(--type-label-lg-size);
+  font-weight: var(--type-label-lg-weight);
+  letter-spacing: var(--type-label-lg-tracking);
+  color: var(--on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.musy-mplayer[data-disabled] .musy-mplayer__title { color: var(--on-surface-disabled); }
+
+/* The slider. block-size is the TARGET, not the rail — the rail is drawn
+   inside it. touch-action: none so a horizontal drag scrubs instead of
+   scrolling the page. */
+.musy-mplayer__slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  inline-size: 100%;
+  block-size: var(--target-primary);
+  touch-action: none;
+  cursor: pointer;
+}
+.musy-mplayer[data-disabled] .musy-mplayer__slider { cursor: not-allowed; }
+
+.musy-mplayer__control { position: relative; inline-size: 100%; }
+
+.musy-mplayer__track {
+  display: block;
+  block-size: var(--sp-1);
+  inline-size: 100%;
+  border-radius: var(--radius-full);
+  background-color: var(--surface-sunken);
+  border: var(--border-width-hairline) var(--border-style-solid) var(--border-subtle);
+  box-sizing: border-box;
+}
+
+.musy-mplayer__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--musy-mplayer-accent);
+  /* Only the fill transitions. The thumb follows the pointer and must not lag
+     behind the finger holding it. */
+  transition: inline-size var(--motion-toggle);
+}
+.musy-mplayer__slider[data-dragging] .musy-mplayer__fill { transition: none; }
+
+.musy-mplayer__thumb {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: var(--sp-4);
+  block-size: var(--sp-4);
+  translate: -50% -50%;
+  border-radius: var(--radius-full);
+  background-color: var(--musy-mplayer-accent);
+  border: var(--border-width-regular) var(--border-style-solid) var(--musy-mplayer-accent-border);
+  box-shadow: var(--elevation-1);
+}
+.musy-mplayer__thumb:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* Elapsed on the left, remaining on the right — the pair the scrubber needs.
+   Same tabular figures as the button. */
+.musy-mplayer__times {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  font-family: var(--type-body-sm-family);
+  font-size: var(--type-body-sm-size);
+  line-height: var(--type-body-sm-line);
+  color: var(--on-surface-muted);
+  font-variant-numeric: tabular-nums;
+}
+.musy-mplayer[data-disabled] .musy-mplayer__times { color: var(--on-surface-disabled); }
+
+/* Forced colours: the accent fill is repainted away, so the played portion and
+   the handle take Highlight — the same escape §19's fill takes. */
+@media (forced-colors: active) {
+  .musy-mplayer__fill,
+  .musy-mplayer__thumb { background-color: Highlight; }
+}
